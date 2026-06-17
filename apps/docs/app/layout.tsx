@@ -10,6 +10,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <RootProvider>
           <DocsLayout
             nav={{ title: 'flue-eve' }}
+            githubUrl="https://github.com/anomalyco/flue-eve-vite"
             tree={source.pageTree}
           >
             {children}

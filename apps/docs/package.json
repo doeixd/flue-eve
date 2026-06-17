@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build"
+    "build": "node scripts/generate-llms-txt.mjs && next build"
   },
   "dependencies": {
     "fumadocs-core": "^14.7.0",

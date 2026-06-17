@@ -1,0 +1,231 @@
+# flue-eve Documentation
+
+> Total: 57 pages
+
+## Admission
+> How user turns are submitted to Flue
+URL: /docs/concepts/admission
+
+## Architecture
+> How flue-eve layers work together
+URL: /docs/concepts/architecture
+
+## Authoring Model
+> How to author agents for flue-eve
+URL: /docs/concepts/authoring-model
+
+## Connections and OAuth
+> How third-party connections and OAuth work
+URL: /docs/concepts/connections-oauth
+
+## Eve and Flue
+> How Eve and Flue relate in this project
+URL: /docs/concepts/eve-and-flue
+
+## Events and Journal
+> How events are translated and stored
+URL: /docs/concepts/events-and-journal
+
+## Migration Tiers
+> Eve compatibility migration levels
+URL: /docs/concepts/migration-tiers
+
+## Sessions, Runs, and Streaming
+> How sessions and streaming work
+URL: /docs/concepts/sessions-streaming
+
+## Contributing
+> How to contribute to flue-eve
+URL: /docs/contributing
+
+## Authentication
+> Production authentication for Eve routes
+URL: /docs/deployment/auth
+
+## Cloudflare Admission
+> Admission strategies on Workers
+URL: /docs/deployment/cloudflare/admission
+
+## Cloudflare Overview
+> Deploy flue-eve on Cloudflare
+URL: /docs/deployment/cloudflare/index
+
+## KV and Durable Object Persistence
+> Storage backends for Cloudflare Workers
+URL: /docs/deployment/cloudflare/kv-do-persistence
+
+## Cloudflare Troubleshooting
+> Common Cloudflare deployment issues
+URL: /docs/deployment/cloudflare/troubleshooting
+
+## Worker Setup
+> Set up a Cloudflare Worker for Eve routes
+URL: /docs/deployment/cloudflare/worker
+
+## Workers AI
+> Using Workers AI with flue-eve
+URL: /docs/deployment/cloudflare/workers-ai
+
+## Environment Variables
+> Environment variable reference
+URL: /docs/deployment/env-vars
+
+## Deployment Overview
+> Deploy your flue-eve app
+URL: /docs/deployment/index
+
+## Node.js
+> Deploy on Node.js
+URL: /docs/deployment/node
+
+## Persistence
+> Journal and session persistence adapters
+URL: /docs/deployment/persistence
+
+## Split-Origin (Mode B)
+> Separate the build server from the Flue server
+URL: /docs/deployment/split-origin
+
+## Client
+> Use the Eve-compatible client SDK
+URL: /docs/getting-started/client
+
+## Cloudflare Worker
+> Deploy on Cloudflare Workers
+URL: /docs/getting-started/cloudflare-worker
+
+## From Eve
+> Migrate an existing Eve project to flue-eve
+URL: /docs/getting-started/from-eve
+
+## Frontend only
+> Use the client SDK without a flue-eve server
+URL: /docs/getting-started/frontend-only
+
+## Getting Started
+> Choose your path
+URL: /docs/getting-started/index
+
+## New project
+> Create a new flue-eve app from scratch
+URL: /docs/getting-started/new-project
+
+## React
+> Use useEveAgent in a React app
+URL: /docs/getting-started/react
+
+## Authoring Connections
+> Configure third-party connections
+URL: /docs/guides/authoring-connections
+
+## Authoring Instructions
+> Write agent instructions
+URL: /docs/guides/authoring-instructions
+
+## Authoring Tools
+> Write custom tools for your agent
+URL: /docs/guides/authoring-tools
+
+## Client Guide
+> Using the Eve-compatible client SDK
+URL: /docs/guides/client
+
+## Connections Guide
+> Using third-party connections
+URL: /docs/guides/connections
+
+## eve.config.ts
+> Configuration file reference
+URL: /docs/guides/eve-config
+
+## Migrate an Existing Eve Agent
+> Migrate an agent written for Eve
+URL: /docs/guides/migrate-existing-eve-agent
+
+## Multi-Agent
+> Set up multiple agents
+URL: /docs/guides/multi-agent
+
+## React Guide
+> Using the useEveAgent hook
+URL: /docs/guides/react
+
+## Troubleshooting
+> Common issues and solutions
+URL: /docs/guides/troubleshooting
+
+## Vite Plugin
+> Configure the flue-eve Vite plugin
+URL: /docs/guides/vite-plugin
+
+## Introduction
+> flue-eve — Eve authoring, Flue runtime
+URL: /docs/index
+
+## Client Package
+> flue-eve/client reference
+URL: /docs/packages/client
+
+## Connections Package
+> "@flue-eve/connections reference"
+URL: /docs/packages/connections
+
+## Package Overview
+> How packages map to user-facing APIs
+URL: /docs/packages/index
+
+## Public Package
+> The planned single-package install experience
+URL: /docs/packages/public-package
+
+## React Package
+> flue-eve/react reference
+URL: /docs/packages/react
+
+## Server Package
+> "@flue-eve/compat-server usage"
+URL: /docs/packages/server
+
+## Vite Plugin Package
+> flue-eve/vite reference
+URL: /docs/packages/vite
+
+## Cloudflare Reference
+> Cloudflare-specific API reference
+URL: /docs/reference/cloudflare
+
+## Compatibility Matrix
+> Eve surface compatibility status
+URL: /docs/reference/compatibility
+
+## Configuration Reference
+> All configuration options
+URL: /docs/reference/config
+
+## Error Reference
+> HTTP error codes and meanings
+URL: /docs/reference/errors
+
+## Eve-to-Flue Mapping
+> How Eve concepts map to Flue
+URL: /docs/reference/eve-to-flue-mapping
+
+## Event Types
+> NDJSON event types in the stream
+URL: /docs/reference/events
+
+## HTTP API Reference
+> Eve HTTP route reference
+URL: /docs/reference/http-api
+
+## Full Compatibility
+> Eve compatibility closure list
+URL: /docs/roadmap/full-compatibility
+
+## Migration Support
+> Tooling for migrating from Eve
+URL: /docs/roadmap/migration-support
+
+## Why flue-eve
+> Eve ergonomics + Flue openness belong together
+URL: /docs/why

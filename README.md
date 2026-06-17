@@ -7,8 +7,7 @@ Eve.dev API surface (`/eve/v1/*`, `flue-eve/client`, `useEveAgent`) powered by [
 [![npm](https://img.shields.io/npm/v/flue-eve)](https://www.npmjs.com/package/flue-eve)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Test](https://github.com/doeixd/flue-eve/actions/workflows/test.yml/badge.svg)](https://github.com/doeixd/flue-eve/actions/workflows/test.yml)
-
----
+[![Docs](https://github.com/doeixd/flue-eve/actions/workflows/docs.yml/badge.svg)](https://doeixd.github.io/flue-eve/)
 
 ## Quick start
 
@@ -91,8 +90,6 @@ Or use the `eve/react` import — the Vite plugin aliases it transparently:
 import { useEveAgent } from "eve/react"; // same as flue-eve/react
 ```
 
----
-
 ## Migrate from Eve
 
 Run the migration scanner:
@@ -110,7 +107,20 @@ npx flue-eve scan
 
 Most Eve chat agents are **Tier 0/1**. Run `npx flue-eve scan --strict` in CI.
 
----
+### Code migration skill
+
+This repo includes a [skills.sh](https://skills.sh)-compatible **[flue-eve skill](./flue-eve/SKILL.md)** for AI coding agents. It guides Claude Code, Cursor, or any skills-compatible agent through the full migration workflow: assess, scaffold, configure, verify.
+
+```bash
+# Install the skill from the repo
+npx skills add doeixd/flue-eve
+```
+
+Once installed, ask your agent:
+
+> "Migrate this Eve project to flue-eve"
+
+The agent will scan the codebase, scaffold Flue runtime files, wire the compat server, and verify the setup.
 
 ## Architecture
 
@@ -122,8 +132,6 @@ Browser / scripts
 ```
 
 **Key split:** the Vite plugin handles integration (proxy, codegen, aliases). The `@flue-eve/compat-server` handles runtime translation — never put stream mapping in Vite middleware if it can live in the Flue server process.
-
----
 
 ## Compatibility matrix
 
@@ -149,8 +157,6 @@ Browser / scripts
 | Eve filesystem discovery | Not supported | Use Flue `src/agents/*.ts` |
 | Eve platform channels | Not supported | Use Flue `@flue/*` channels |
 
----
-
 ## Packages
 
 The `flue-eve` package bundles every subpackage under subpath imports:
@@ -167,13 +173,9 @@ The `flue-eve` package bundles every subpackage under subpath imports:
 | `flue-eve/connections/search` | `@flue-eve/connections/search` — connection search |
 | `flue-eve/connections/connect` | `@flue-eve/connections/connect` — `@vercel/connect` bridge |
 
----
-
 ## Production
 
 See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for Node reverse-proxy, env vars, journal backends, and Cloudflare Workers.
-
----
 
 ## Contributing
 
@@ -186,17 +188,14 @@ pnpm dev:integrated    # Vite UI + flue dev + Eve shim
 vp test                # 375+ tests across 67 test files
 ```
 
----
-
 ## Docs
 
 - [PLAN.md](./PLAN.md) — architecture, milestones, invariants
 - [AGENTS.md](./AGENTS.md) — onboarding for coding agents
 - [DEPLOYMENT.md](./DEPLOYMENT.md) — production deployment
+- [flue-eve/](./flue-eve/) — AI coding agent skill for migration workflows
 - [Eve docs](https://eve.dev/docs/introduction) — compatibility target
 - [Flue docs](https://flueframework.com/docs/getting-started/quickstart/) — runtime
-
----
 
 ## License
 

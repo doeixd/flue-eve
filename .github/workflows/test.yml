@@ -32,6 +32,9 @@ jobs:
       - name: Build
         run: vp exec -- pnpm -r run build
 
+      - name: Build docs (no deploy)
+        run: vp exec -- pnpm --filter @flue-eve/docs build
+
   cloudflare-smoke:
     runs-on: ubuntu-latest
     steps:
