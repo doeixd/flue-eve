@@ -93,8 +93,14 @@ function runSmoke() {
       shell: false,
     });
 
-    child.stdout?.on("data", (chunk) => appendFileSync(wranglerLogPath, chunk));
-    child.stderr?.on("data", (chunk) => appendFileSync(wranglerLogPath, chunk));
+    child.stdout?.on("data", (chunk) => {
+      appendFileSync(wranglerLogPath, chunk);
+      process.stdout.write(chunk);
+    });
+    child.stderr?.on("data", (chunk) => {
+      appendFileSync(wranglerLogPath, chunk);
+      process.stderr.write(chunk);
+    });
     child.on("exit", (code) => resolve(code ?? 1));
   });
 }
@@ -131,6 +137,7 @@ try {
   exitCode = await runSmoke();
   if (exitCode !== 0) {
     errorMessage = `smoke exited with code ${exitCode}`;
+    log(`[smoke:cloudflare-ci] failed: ${errorMessage}`);
   } else {
     log("[smoke:cloudflare-ci] ok");
   }
