@@ -18,17 +18,20 @@ jobs:
           node-version: 22.19.0
           cache: pnpm
 
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y liblzma-dev
+
       - name: Install vite-plus
         run: npm install -g vite-plus@0.1.24
 
       - name: Install dependencies
         run: vp install
 
-      - name: Test
-        run: vp test
-
       - name: Build
         run: vp exec -- pnpm --filter "./packages/*" run build
+
+      - name: Test
+        run: vp test
 
       - name: Build docs (no deploy)
         run: vp exec -- pnpm --filter @flue-eve/docs build
@@ -44,6 +47,9 @@ jobs:
         with:
           node-version: 22.19.0
           cache: pnpm
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y liblzma-dev
 
       - name: Install vite-plus
         run: npm install -g vite-plus@0.1.24
