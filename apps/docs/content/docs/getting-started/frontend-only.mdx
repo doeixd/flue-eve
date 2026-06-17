@@ -1,12 +1,13 @@
 ---
 title: Frontend only
-description: Use the client SDK and React hook without a flue-eve server
+description: Use the client SDK and React hook against an existing Eve-compatible server
 ---
 
 # Frontend only
 
-If you have an existing Eve-compatible HTTP server or want to use `flue-eve`
-with an external backend, you only need the client and React packages.
+If the Eve-compatible HTTP server already exists, install only the browser-side
+package and point it at that origin. You do not need the Vite plugin unless you
+want import aliases or local proxying.
 
 ## Client SDK
 
@@ -18,52 +19,63 @@ npm install flue-eve
 import { Client } from 'flue-eve/client'
 
 const client = new Client({
-  baseUrl: 'https://your-server.com/eve/v1',
+  host: 'https://your-server.com',
 })
 
-const session = await client.createSession({ message: 'Hello!' })
+const session = client.session()
+const response = await session.send('Hello!')
 
-for await (const event of session.stream()) {
-  console.log(event)
+for await (const event of response) {
+  console.log(event.type)
 }
 ```
 
-All client methods — `createSession`, `send`, `stream`, `result` — work
-against any Eve-compatible HTTP server.
+`host` is the origin that serves `/eve/v1/*`. Do not include `/eve/v1` in the
+host; the client appends the Eve route paths itself.
 
 ## React hook
 
 ```tsx
-import { useEveAgent, createEveSessionPersistence } from 'flue-eve/react'
+import { useEveAgent } from 'flue-eve/react'
 
-const persistence = createEveSessionPersistence({ storage: localStorage })
-const { messages, send, ready, stop } = useEveAgent(persistence)
-```
-
-Set `baseUrl` in the persistence options to point to your server:
-
-```tsx
-const persistence = createEveSessionPersistence({
-  storage: localStorage,
-  baseUrl: 'https://your-server.com/eve/v1',
+const agent = useEveAgent({
+  host: 'https://your-server.com',
 })
 ```
 
-## Vite alias
+Persist the session cursor when you want reload recovery:
 
-The Vite plugin auto-aliases `eve/client` → `flue-eve/client` and
-`eve/react` → `flue-eve/react`. If you use those imports, existing
-browser code works unchanged without the plugin installed.
+```tsx
+import { createEveSessionPersistence, useEveAgent } from 'flue-eve/react'
+
+const persistence = createEveSessionPersistence({ storage: localStorage })
+
+const agent = useEveAgent({
+  ...persistence,
+  host: 'https://your-server.com',
+})
+```
 
 ## Authentication
 
-For production, pass a bearer token:
+For production, pass bearer or basic auth. Function values are resolved before
+each request and reconnect:
 
 ```ts
 const client = new Client({
-  baseUrl: 'https://your-server.com/eve/v1',
-  auth: { type: 'bearer', token: 'your-token' },
+  host: 'https://your-server.com',
+  auth: {
+    bearer: async () => await getAccessToken(),
+  },
 })
 ```
+
+The React hook accepts the same `auth` and `headers` options.
+
+## Vite alias
+
+The Vite plugin can alias `eve/client` to `flue-eve/client` and `eve/react` to
+`flue-eve/react` for migration projects. Without the plugin, import the
+`flue-eve/*` entrypoints explicitly.
 
 See [deployment](/docs/deployment) for production setup.

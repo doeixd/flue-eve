@@ -75,7 +75,7 @@ URL: /docs/deployment/persistence
 URL: /docs/deployment/split-origin
 
 ## Client
-> Use the Eve-compatible client SDK for programmatic access
+> Use the Eve-compatible TypeScript client from scripts, tests, and custom UIs
 URL: /docs/getting-started/client
 
 ## Cloudflare Worker
@@ -83,23 +83,23 @@ URL: /docs/getting-started/client
 URL: /docs/getting-started/cloudflare-worker
 
 ## From Eve
-> Migrate an existing Eve project to flue-eve
+> Move Eve browser and HTTP integrations onto a Flue-backed runtime
 URL: /docs/getting-started/from-eve
 
 ## Frontend only
-> Use the client SDK and React hook without a flue-eve server
+> Use the client SDK and React hook against an existing Eve-compatible server
 URL: /docs/getting-started/frontend-only
 
 ## Getting Started
-> Choose your path to start building with flue-eve
+> Pick the fastest path for a new app, an Eve migration, or a client integration
 URL: /docs/getting-started/index
 
 ## New project
-> Create a new flue-eve app from scratch
+> Create a Vite app with Eve-compatible routes backed by Flue
 URL: /docs/getting-started/new-project
 
 ## React
-> Use useEveAgent in a React app to build agent-powered chat UIs
+> Build a React chat UI with the Eve-compatible useEveAgent hook
 URL: /docs/getting-started/react
 
 ## Authoring Connections
@@ -115,7 +115,7 @@ URL: /docs/guides/authoring-instructions
 URL: /docs/guides/authoring-tools
 
 ## Client Guide
-> Comprehensive guide to the Eve-compatible client SDK
+> Advanced usage of the Eve-compatible TypeScript client
 URL: /docs/guides/client
 
 ## Connections Guide
@@ -134,7 +134,7 @@ URL: /docs/guides/migrate-existing-eve-agent
 URL: /docs/guides/multi-agent
 
 ## React Guide
-> Comprehensive guide to useEveAgent — reducers, HITL, persistence, patterns
+> useEveAgent options, reducers, HITL responses, persistence, and callbacks
 URL: /docs/guides/react
 
 ## Troubleshooting
@@ -146,10 +146,11 @@ URL: /docs/guides/troubleshooting
 URL: /docs/guides/vite-plugin
 
 ## Introduction
-> flue-eve — Eve authoring, Flue runtime
+> Eve-compatible client, React, and HTTP APIs running on Flue
 URL: /docs/index
 
-## packages\client.mdx
+## Client Package
+> flue-eve/client reference
 URL: /docs/packages/client
 
 ## packages\connections.mdx

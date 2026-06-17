@@ -3,24 +3,40 @@ title: Client Package
 description: flue-eve/client reference
 ---
 
-# Client
+# Client Package
 
 ```ts
-import { Client, ClientSession } from 'flue-eve/client';
+import { Client, ClientSession, ClientError } from 'flue-eve/client'
 ```
 
 ## Client
 
-| Method | Description |
-|--------|-------------|
-| `createSession(input)` | Start a new session |
-| `reconnect(sessionId, startIndex?)` | Reconnect to existing session |
+| API | Description |
+|-----|-------------|
+| `new Client(options?)` | Bind a host, auth policy, headers, and reconnect budget |
+| `client.health()` | Call `GET /eve/v1/health` |
+| `client.info()` | Call `GET /eve/v1/info` |
+| `client.fetch(path, init?)` | Fetch a route with configured auth and headers |
+| `client.session(state?)` | Create or restore a `ClientSession` |
 
 ## ClientSession
 
-| Method | Description |
-|--------|-------------|
-| `send(input)` | Send a user message |
-| `stream()` | Async iterable of NDJSON events |
-| `result()` | Wait for completion and return text |
-| `close()` | Close the session |
+| API | Description |
+|-----|-------------|
+| `session.state` | Current `{ sessionId, continuationToken, streamIndex }` |
+| `session.send(input)` | Post a first or follow-up turn and return `MessageResponse` |
+| `session.stream(options?)` | Stream an existing session from the stored or provided index |
+
+## MessageResponse
+
+| API | Description |
+|-----|-------------|
+| `response.sessionId` | Session ID returned by the server |
+| `response.continuationToken` | Continuation token returned for the next turn |
+| `for await (const event of response)` | Consume current-turn Eve events |
+| `response.result()` | Consume the turn and return `{ status, message, data, events }` |
+
+## Persistence helpers
+
+`loadSessionState`, `saveSessionState`, `clearSessionState`, and
+`isSessionState` support browser storage or any Storage-like object.

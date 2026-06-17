@@ -1,28 +1,48 @@
 ---
 title: From Eve
-description: Migrate an existing Eve project to flue-eve
+description: Move Eve browser and HTTP integrations onto a Flue-backed runtime
 ---
 
 # From Eve
 
-If you have an existing Eve project, the migration is mostly automated.
+The safest migration starts by separating the Eve surface from the Eve runtime.
+Browser and client code usually move first because `eve/client` and `eve/react`
+map directly to `flue-eve/client` and `flue-eve/react`. Server-side agent
+authoring then moves into Flue agents and tools.
 
-## 1. Scan
+## What usually stays unchanged
 
-The scanner analyzes your project and reports what needs to change:
+- Browser code that calls `/eve/v1/*`.
+- Client-side session cursors: `sessionId`, `continuationToken`, `streamIndex`.
+- NDJSON stream consumption and reconnect behavior.
+- React UI state based on `useEveAgent`.
+- Tool, HITL, authorization, and result events that are already in the
+  supported compatibility set.
+
+## What moves to Flue
+
+- Agent execution and model configuration.
+- Tool implementation and sandbox behavior.
+- Deployment topology.
+- Any platform channels outside the Eve HTTP channel.
+
+## 1. Scan the project
+
+The scanner classifies imports, filesystem layout, and unsupported surfaces:
 
 ```bash
 npx flue-eve scan
 ```
 
 | Tier | What it finds | Action |
-|------|--------------|--------|
+|------|---------------|--------|
 | 0 | `useEveAgent`, `eve/client` browser imports | Zero-touch |
 | 1 | `agent/instructions.md`, `agent/tools/*.ts` | Auto-scaffold |
 | 2 | Complex tool patterns, non-standard layout | Manual review |
 | 3 | Workflow SDK, channels, schedules | Blocked |
 
-Most Eve chat agents are Tier 0/1 — see [migration tiers](/docs/concepts/migration-tiers).
+Most browser-first Eve chat apps are Tier 0/1. See
+[migration tiers](/docs/concepts/migration-tiers) for the detailed rules.
 
 Use `--strict` in CI to fail on Tier 2/3 findings:
 
@@ -30,18 +50,34 @@ Use `--strict` in CI to fail on Tier 2/3 findings:
 npx flue-eve scan --strict
 ```
 
-## 2. Init
+## 2. Initialize the bridge
 
 ```bash
 npx flue-eve init
 ```
 
-Creates Flue runtime files, Eve compat sidecar, and tool adapters.
+This creates Flue runtime files, the Eve compat sidecar, and any generated
+adapters that the scanner can produce safely.
 
-## 3. Update imports
+## 3. Keep browser imports or switch explicitly
 
-The Vite plugin auto-aliases `eve/client` → `flue-eve/client` and
-`eve/react` → `flue-eve/react`. No browser import changes needed.
+The Vite plugin can alias browser imports:
+
+```text
+eve/client -> flue-eve/client
+eve/react  -> flue-eve/react
+```
+
+That lets a UI migrate without touching every component. If you prefer explicit
+imports, change them directly:
+
+```diff
+- import { Client } from 'eve/client'
++ import { Client } from 'flue-eve/client'
+
+- import { useEveAgent } from 'eve/react'
++ import { useEveAgent } from 'flue-eve/react'
+```
 
 For server code:
 
@@ -50,7 +86,7 @@ For server code:
 + import { eveCompat } from '@flue-eve/compat-server';
 ```
 
-## 4. Replace the Vite plugin
+## 4. Replace the Vite integration
 
 ```diff
 - import eve from 'eve/vite';
@@ -64,13 +100,14 @@ For server code:
   });
 ```
 
-## 5. Dev
+## 5. Run locally
 
 ```bash
 pnpm dev
 ```
 
-With mock admission, you can test without an LLM key:
+Mock admission lets you verify the Eve HTTP contract before provider keys or
+real Flue admission are configured:
 
 ```bash
 curl -X POST http://localhost:5173/eve/v1/session \
@@ -78,7 +115,7 @@ curl -X POST http://localhost:5173/eve/v1/session \
   -d '{"message":"Hello"}'
 ```
 
-For real LLM responses, start `flue dev` and set `FLUE_BASE_URL`:
+For real LLM responses, run Flue and set `FLUE_BASE_URL`:
 
 ```bash
 FLUE_BASE_URL=http://127.0.0.1:3583 pnpm dev
@@ -91,6 +128,15 @@ FLUE_BASE_URL=http://127.0.0.1:3583 pnpm dev
 - `sessionId` and `continuationToken` semantics
 - `useEveAgent` reducer and event types
 - Client reconnect and `startIndex` behavior
+
+## What to review manually
+
+- Eve filesystem discovery: Flue owns runtime discovery, so generated files
+  should be reviewed instead of relying on Eve's `agent/` auto-load semantics.
+- Platform channels: use Flue channel integrations or `@flue-eve/channels`
+  instead of assuming Eve Slack/Discord channels are present.
+- Production auth: the compat server fails closed unless `auth: 'none'` is
+  configured intentionally.
 
 ## AI-assisted migration
 

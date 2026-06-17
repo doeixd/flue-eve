@@ -158,9 +158,14 @@ generic message are returned.
 ## Handling errors in the client
 
 ```ts
+import { ClientError } from 'flue-eve/client'
+
 try {
-  const session = await client.createSession({ message: 'Hello' })
+  const session = client.session()
+  await (await session.send('Hello')).result()
 } catch (err) {
+  if (!(err instanceof ClientError)) throw err
+
   switch (err.status) {
     case 401:
       // Re-authenticate

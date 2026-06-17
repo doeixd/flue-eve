@@ -1,12 +1,13 @@
 ---
 title: React Guide
-description: Comprehensive guide to useEveAgent — reducers, HITL, persistence, patterns
+description: useEveAgent options, reducers, HITL responses, persistence, and callbacks
 ---
 
 # React Guide
 
-The `flue-eve/react` package provides `useEveAgent` — a React hook that manages
-the full agent session lifecycle.
+`flue-eve/react` exports `useEveAgent`, the React wrapper around
+`ClientSession`. It keeps the Eve frontend pattern: send a turn, stream events,
+reduce them into UI state, and hold a serializable session cursor.
 
 ## Hook options
 
@@ -14,250 +15,135 @@ the full agent session lifecycle.
 import { useEveAgent } from 'flue-eve/react'
 
 const agent = useEveAgent({
-  agent: 'assistant',        // agent name
-  api: '/eve/v1',            // Eve API mount point
-  auth: {                    // optional — bearer token
-    type: 'bearer',
-    token: 'your-token',
+  host: 'https://agent.example.com',
+  auth: {
+    bearer: async () => await getAccessToken(),
   },
-  reducer: customReducer,    // optional — custom message reducer
-  onError: (err) => {        // optional — error callback
-    console.error(err)
-  },
+  headers: async () => ({
+    'x-request-id': crypto.randomUUID(),
+  }),
+  maxReconnectAttempts: 3,
+  onError: (error) => console.error(error),
+  onEvent: (event) => console.debug(event.type),
 })
 ```
 
-Or pass a persistence object:
-
-```tsx
-import { createEveSessionPersistence } from 'flue-eve/react'
-
-const persistence = createEveSessionPersistence({
-  storage: localStorage,
-  baseUrl: '/eve/v1',
-  agent: 'assistant',
-})
-
-const agent = useEveAgent(persistence)
-```
+Same-origin apps usually omit `host`.
 
 ## Return value
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `messages` | `UIMessage[]` | All conversation messages, updated live |
-| `ready` | `boolean` | Agent is accepting input |
-| `send` | `(message: string \| object) => Promise<void>` | Send a message |
-| `stop` | `() => void` | Abort the current stream |
-| `error` | `Error \| null` | Non-recoverable session error |
-| `input` | `{ requested: HITLInput } \| null` | Active HITL request |
+| `data` | Reducer output | `{ messages }` by default |
+| `status` | `"ready" \| "submitted" \| "streaming" \| "error"` | Current turn state |
+| `error` | `Error \| undefined` | Last fatal error |
+| `events` | `EveEvent[]` | Raw authoritative stream events |
+| `session` | `SessionState` | Cursor for persistence |
+| `send` | `(input) => Promise<void>` | Send message, context, output schema, or HITL responses |
+| `stop` | `() => void` | Abort the active stream |
+| `reset` | `() => void` | Clear local state and create a fresh session |
 
 ## Custom reducers
 
-The default reducer handles text accumulation, tool call tracking, and message
-status. You can provide a custom reducer for different event handling:
+The default reducer returns `{ messages }`. Custom reducers can project the
+same event stream into any shape:
 
 ```tsx
-import { useEveAgent, defaultReducer } from 'flue-eve/react'
+import { useEveAgent, type EveAgentReducer } from 'flue-eve/react'
 
-function myReducer(state: UIMessage[], event: EveStreamEvent): UIMessage[] {
-  switch (event.type) {
-    case 'agent.content.delta':
-      // Custom text handling
-      return [...]
-    default:
-      // Fall back to default for other events
-      return defaultReducer(state, event)
-  }
+type ToolStats = { toolCalls: number }
+
+const reducer: EveAgentReducer<ToolStats> = {
+  initial: () => ({ toolCalls: 0 }),
+  reduce: (data, event) =>
+    event.type === 'actions.requested'
+      ? { toolCalls: data.toolCalls + event.data.actions.length }
+      : data,
 }
 
-const agent = useEveAgent({
-  reducer: myReducer,
-})
+const agent = useEveAgent({ reducer })
 ```
 
-The reducer receives the current message array and each incoming stream event,
-and must return the updated message array.
-
-## Message types
-
-```ts
-interface UIMessage {
-  id: string
-  role: 'user' | 'assistant'
-  content: string
-  toolCalls?: ToolCall[]
-  createdAt?: Date
-  status?: 'pending' | 'streaming' | 'complete' | 'error'
-}
-
-interface ToolCall {
-  id: string
-  toolCallId: string
-  toolName: string
-  args: unknown
-  result?: unknown
-  isError?: boolean
-  status: 'pending' | 'complete' | 'error'
-}
-```
+Reducer input includes both server events and client projection events such as
+`client.message.submitted`, `client.message.failed`, and
+`client.input.responded`.
 
 ## Human-in-the-loop
 
-When the agent pauses for input, `agent.input.requested` is populated:
+HITL requests arrive as `input.requested` events. The default reducer exposes
+them on `dynamic-tool` parts:
 
 ```tsx
-if (agent.input?.requested) {
-  const { type, prompt, options } = agent.input.requested
+const request = agent.data.messages
+  .flatMap((message) => message.parts)
+  .find((part) => part.type === 'dynamic-tool' && part.toolMetadata?.eve?.inputRequest)
+  ?.toolMetadata?.eve?.inputRequest
 
-  if (type === 'approval') {
-    return (
-      <div>
-        <p>Approve this action?</p>
-        <p>{prompt}</p>
-        <button onClick={() => agent.send({ approved: true })}>
-          Approve
-        </button>
-        <button onClick={() => agent.send({ approved: false })}>
-          Reject
-        </button>
-      </div>
-    )
-  }
-
-  if (type === 'text') {
-    return (
-      <div>
-        <p>{prompt}</p>
-        <input onSubmit={(value) => agent.send({ value })} />
-      </div>
-    )
-  }
+if (request) {
+  await agent.send({
+    inputResponses: [
+      {
+        requestId: request.requestId,
+        optionId: 'approve',
+      },
+    ],
+  })
 }
 ```
 
-The stream automatically resumes after `send()` returns a response. The
-`inputResponses` are included in the follow-up `POST` to the session route.
-
-## Stopping a stream
-
-```tsx
-const agent = useEveAgent(persistence)
-
-return (
-  <button onClick={() => agent.stop()} disabled={agent.ready}>
-    Stop generating
-  </button>
-)
-```
-
-Calling `stop()` aborts the current HTTP stream, the hook returns to `ready`
-state, and the last partial message content is preserved in `messages`.
-
-## Handling errors
-
-```tsx
-if (agent.error) {
-  return <ErrorDisplay error={agent.error} onRetry={() => {/* remount */}} />
-}
-```
-
-`agent.error` is set on non-recoverable failures (network errors, 500 responses,
-session termination). Recoverable step-level failures (a tool call failing) are
-included in the message's `toolCalls` array with `isError: true`.
+The hook projects `client.input.responded` immediately, then updates the message
+again when the server streams the resumed result.
 
 ## Persistence
 
-The hook automatically saves and restores session state when you pass a
-persistence object:
+Use the helper for localStorage-backed session cursors:
 
 ```tsx
-const persistence = createEveSessionPersistence({
-  storage: localStorage,      // required — Storage-like object
-  baseUrl: '/eve/v1',         // optional, defaults to '/eve/v1'
-  agent: 'assistant',         // optional
+import { createEveSessionPersistence, useEveAgent } from 'flue-eve/react'
+
+const persistence = createEveSessionPersistence({ storage: localStorage })
+
+const agent = useEveAgent({
+  ...persistence,
+  host: 'https://agent.example.com',
 })
 ```
 
-What's saved:
-- `sessionId` — to reconnect to the same session
-- `continuationToken` — to authorize the next turn
-- `streamIndex` — to replay from where you left off
-- `agent` — which agent to use
+The saved state contains `sessionId`, `continuationToken`, and `streamIndex`.
+Keep all three fields.
 
-On remount, the hook restores the session, replays from the saved `streamIndex`,
-and continues streaming live events as they arrive.
+## Client context
 
-## Cleanup
-
-The hook cleans up automatically on unmount. It aborts any in-flight stream and
-clears internal timers. No manual cleanup is needed.
-
-## Full example with all features
+Attach ephemeral page state with `prepareSend`:
 
 ```tsx
-import { useState, useCallback } from 'react'
-import { useEveAgent, createEveSessionPersistence } from 'flue-eve/react'
-
-const persistence = createEveSessionPersistence({
-  storage: localStorage,
-  baseUrl: '/eve/v1',
-  agent: 'assistant',
+const agent = useEveAgent({
+  prepareSend: (input) => ({
+    ...input,
+    clientContext: {
+      route: location.pathname,
+      selectedProjectId,
+    },
+  }),
 })
-
-export default function Chat() {
-  const agent = useEveAgent(persistence)
-  const [input, setInput] = useState('')
-
-  const handleSend = useCallback((e: React.FormEvent) => {
-    e.preventDefault()
-    if (!input.trim() || !agent.ready) return
-    agent.send(input)
-    setInput('')
-  }, [input, agent.ready, agent.send])
-
-  if (agent.error) {
-    return (
-      <div className="error-container">
-        <h2>Session Error</h2>
-        <p>{agent.error.message}</p>
-        <button onClick={() => window.location.reload()}>
-          Start New Session
-        </button>
-      </div>
-    )
-  }
-
-  if (agent.input?.requested) {
-    return <HITLPanel input={agent.input.requested} onRespond={agent.send} />
-  }
-
-  return (
-    <div className="chat-container">
-      <MessageList
-        messages={agent.messages}
-        isStreaming={!agent.ready}
-      />
-      <form onSubmit={handleSend} className="input-area">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
-          disabled={!agent.ready}
-        />
-        <button type="submit" disabled={!agent.ready || !input.trim()}>
-          Send
-        </button>
-        {!agent.ready && (
-          <button type="button" onClick={() => agent.stop()}>
-            Stop
-          </button>
-        )}
-      </form>
-    </div>
-  )
-}
 ```
 
-See [getting started with React](/docs/getting-started/react) for the basic
-setup and [client guide](/docs/guides/client) for the programmatic SDK.
+`clientContext` affects the next turn only and does not replace durable session
+history.
+
+## Cleanup and stopping
+
+The hook aborts an active stream when the component unmounts. Call `stop()` when
+the user cancels a turn:
+
+```tsx
+const busy = agent.status === 'submitted' || agent.status === 'streaming'
+
+return busy ? <button onClick={agent.stop}>Stop generating</button> : null
+```
+
+After an abort, the hook returns to `ready` and keeps the partial message state
+that was already reduced.
+
+See [getting started with React](/docs/getting-started/react) for a smaller
+end-to-end chat component.

@@ -1,40 +1,79 @@
 ---
 title: Introduction
-description: flue-eve — Eve authoring, Flue runtime
+description: Eve-compatible client, React, and HTTP APIs running on Flue
 ---
 
 # flue-eve
 
-**[Eve](https://eve.dev) authoring + frontend/client contract on an open [Flue](https://flueframework.com) runtime.**
+`flue-eve` keeps the parts of [Eve](https://eve.dev) that application code
+depends on: `/eve/v1/*` routes, NDJSON streaming, the TypeScript client, and
+`useEveAgent`. The work runs on [Flue](https://flueframework.com), so the agent
+harness, tools, durability, and deployment target stay open.
 
-`flue-eve` is a compatibility layer that lets you use [Eve](https://eve.dev)-style
-HTTP routes, client SDKs, and React hooks while running your agents on
-[Flue](https://flueframework.com) — an open, deploy-anywhere agent runtime.
+The intent is practical compatibility, not a fork. Existing Eve browser code
+should keep talking to the same session protocol while server-side execution is
+owned by Flue.
 
-## What you get
+## What stays familiar
 
-- **Eve HTTP routes** — `/eve/v1/health`, `/session`, `/stream` work as documented
-- **Eve client SDK** — drop-in `eve/client` or use `flue-eve/client`
-- **`useEveAgent` hook** — drop-in from `eve/react` or use `flue-eve/react`
-- **Vite plugin** — proxy / scaffold / aliases in one dependency
-- **Flue runtime** — agents, tools, durable execution, deploy on Node or Cloudflare
+- `GET /eve/v1/health`, `POST /eve/v1/session`, and session streams.
+- `Client` and `ClientSession` from `eve/client`-compatible imports.
+- `useEveAgent` with session state, reducer output, reconnects, and HITL events.
+- `sessionId`, `continuationToken`, and `streamIndex` as the browser-facing handles.
+- One JSON event per line over `application/x-ndjson`.
+
+## What changes
+
+- Agents are authored as Flue agents, not as a full Eve filesystem runtime.
+- The Vite plugin wires development: aliases, proxying, sidecar scaffold, and
+  the `flue dev` integration.
+- `@flue-eve/compat-server` translates at runtime and owns the Eve event journal.
+- Production deploys use normal Flue-compatible targets such as Node, split
+  origin Node, Nitro, or Cloudflare Workers.
+
+## A project at a glance
+
+```text
+my-app/
+├── src/
+│   ├── agents/assistant.ts       # Flue agent
+│   ├── app.ts                    # Flue app routes
+│   ├── flue-eve-shim.ts          # mounts /eve/v1
+│   └── ui/App.tsx                # React UI using useEveAgent
+├── vite.config.ts                # flueEve() plugin
+└── package.json
+```
+
+Start with the Vite plugin and a single agent. Add persistence, auth,
+connections, and deployment-specific configuration only when the app needs them.
+
+## Request flow
+
+```text
+Browser or script
+  -> /eve/v1/session and /stream     Eve HTTP contract
+  -> @flue-eve/compat-server         tokens, journal, NDJSON, mapping
+  -> @flue/runtime                   agent harness, tools, durable stream
+```
+
+The journal is the important boundary: Eve clients reconnect with `startIndex`,
+and the compat server replays journaled Eve events instead of exposing Flue
+stream offsets.
 
 ## Quick links
 
 | Path | Purpose |
 |------|---------|
-| `/docs/getting-started/new-project` | Create a new app from scratch |
-| `/docs/getting-started/from-eve` | Migrate an existing Eve project |
-| `/docs/getting-started/frontend-only` | Use the client SDK without a server |
-| `/docs/deployment` | Deploy on Node, split-origin, or Cloudflare Worker |
-| `/docs/reference/compatibility` | Full Eve compatibility matrix |
-| `/docs/concepts/architecture` | How compat-server translates Eve ↔ Flue |
-| `/docs/concepts/migration-tiers` | Tier-based migration classification |
+| [New project](/docs/getting-started/new-project) | Build a Vite + React app from scratch |
+| [From Eve](/docs/getting-started/from-eve) | Move an existing Eve UI or agent toward Flue |
+| [React](/docs/getting-started/react) | Render a browser chat UI with `useEveAgent` |
+| [Client](/docs/getting-started/client) | Call the Eve-compatible HTTP API from TypeScript |
+| [Architecture](/docs/concepts/architecture) | Understand translation, admission, and replay |
+| [Compatibility](/docs/reference/compatibility) | Check which Eve surfaces are supported |
 
 ## AI-assisted migration
 
-A [skills.sh](https://skills.sh)-compatible migration skill is bundled in the
-repo. Install it and let your AI coding agent handle the migration:
+A migration skill is bundled for coding agents that understand skills:
 
 ```bash
 npx skills add doeixd/flue-eve
@@ -42,6 +81,7 @@ npx skills add doeixd/flue-eve
 
 ## Project status
 
-**M0–M8 complete.** All planned milestones are implemented. 375+ tests across
-67 test files. See [roadmap](/docs/roadmap/full-compatibility) for remaining
-polish items.
+M0-M8 are complete. The repo has 380 Vitest tests across 68 files, with the
+remaining known polish item around live MCP 401 behavior against a real MCP
+server. See the [compatibility matrix](/docs/reference/compatibility) and
+[roadmap](/docs/roadmap/full-compatibility) for the detailed ledger.

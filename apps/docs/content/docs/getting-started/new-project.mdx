@@ -1,11 +1,13 @@
 ---
 title: New project
-description: Create a new flue-eve app from scratch
+description: Create a Vite app with Eve-compatible routes backed by Flue
 ---
 
 # New project
 
-Create a new Vite + React app with the `flue-eve` Vite plugin.
+This path starts with a Vite React app and adds the `flue-eve` Vite plugin. In
+development, the browser talks to `/eve/v1/*` on the Vite origin while the Flue
+server handles the compat routes.
 
 ## 1. Create the app
 
@@ -20,15 +22,7 @@ cd my-app
 npm install flue-eve
 ```
 
-## 3. Initialize
-
-```bash
-npx flue-eve init
-```
-
-Creates the Eve compat sidecar, agent definition, and Flue runtime files.
-
-## 4. Add the Vite plugin
+## 3. Add the Vite plugin
 
 ```ts
 // vite.config.ts
@@ -41,26 +35,53 @@ export default defineConfig({
 })
 ```
 
-## 5. Use the client or React hook
+The plugin can scaffold the sidecar that mounts the compat server and can alias
+Eve imports to `flue-eve` imports during migration.
+
+## 4. Initialize the Flue/Eve bridge
+
+```bash
+npx flue-eve init
+```
+
+This creates the Flue runtime files, an Eve compat sidecar, and a starter agent.
+The generated server sidecar mounts `@flue-eve/compat-server` under `/eve/v1`.
+
+## 5. Render a chat UI
 
 ```tsx
 // src/App.tsx
-import { useEveAgent, createEveSessionPersistence } from 'flue-eve/react'
+import { useState } from 'react'
+import { useEveAgent } from 'flue-eve/react'
 
-const persistence = createEveSessionPersistence({ storage: localStorage })
-const { messages, send, ready, stop } = useEveAgent(persistence)
-```
+export default function App() {
+  const agent = useEveAgent()
+  const [message, setMessage] = useState('')
+  const busy = agent.status === 'submitted' || agent.status === 'streaming'
 
-Or use the client SDK directly:
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        if (!message.trim() || busy) return
+        void agent.send({ message })
+        setMessage('')
+      }}
+    >
+      {agent.data.messages.map((item) => (
+        <article key={item.id}>
+          <strong>{item.role}</strong>
+          {item.parts.map((part, index) =>
+            part.type === 'text' ? <p key={index}>{part.text}</p> : null,
+          )}
+        </article>
+      ))}
 
-```ts
-import { Client } from 'flue-eve/client'
-
-const client = new Client({ baseUrl: '/eve/v1' })
-const session = await client.createSession({ message: 'Hello!' })
-
-for await (const event of session.stream()) {
-  console.log(event)
+      <input value={message} onChange={(event) => setMessage(event.target.value)} />
+      <button disabled={busy || !message.trim()}>Send</button>
+      {busy ? <button type="button" onClick={agent.stop}>Stop</button> : null}
+    </form>
+  )
 }
 ```
 
@@ -70,10 +91,10 @@ for await (const event of session.stream()) {
 npm run dev
 ```
 
-Vite + Flue start together on `http://localhost:5173`. With mock admission (default),
-the agent returns deterministic responses without needing an LLM key.
+Open `http://localhost:5173`. With mock admission, the agent returns
+deterministic responses without needing an LLM key.
 
-Test it:
+You can also test the raw route:
 
 ```bash
 curl -X POST http://localhost:5173/eve/v1/session \
@@ -81,7 +102,11 @@ curl -X POST http://localhost:5173/eve/v1/session \
   -d '{"message":"Hello"}'
 ```
 
-To test with a real LLM, start `flue dev` and set `FLUE_BASE_URL=http://127.0.0.1:3583`.
+To use real Flue execution, run `flue dev` and point the compat server at it:
+
+```bash
+FLUE_BASE_URL=http://127.0.0.1:3583 npm run dev
+```
 
 ## Next steps
 

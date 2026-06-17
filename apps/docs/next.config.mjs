@@ -1,4 +1,8 @@
 import { createMDX } from 'fumadocs-mdx/next'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const withMDX = createMDX({
   mdxOptions: {
@@ -21,6 +25,9 @@ const nextConfig = {
   assetPrefix: basePath || undefined,
   trailingSlash: true,
   images: { unoptimized: true },
+  turbopack: {
+    root: resolve(__dirname, '../..'),
+  },
 }
 
 export default withMDX(nextConfig)
