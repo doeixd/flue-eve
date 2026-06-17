@@ -1,4 +1,5 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -11,7 +12,7 @@ import {
 import { resolveFlueProjectLayout } from "./paths.js";
 
 function makeProject(files: Record<string, string>): string {
-  const root = mkdtempSync(join(process.cwd(), ".tmp", "flue-eve-migration-"));
+  const root = mkdtempSync(join(tmpdir(), "flue-eve-migration-"));
   for (const [relative, content] of Object.entries(files)) {
     const full = join(root, ...relative.split("/"));
     mkdirSync(join(full, ".."), { recursive: true });

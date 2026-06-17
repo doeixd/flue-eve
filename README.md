@@ -1,13 +1,13 @@
+[![npm](https://img.shields.io/npm/v/flue-eve)](https://www.npmjs.com/package/flue-eve)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Test](https://github.com/doeixd/flue-eve/actions/workflows/test.yml/badge.svg)](https://github.com/doeixd/flue-eve/actions/workflows/test.yml)
+[![Docs](https://github.com/doeixd/flue-eve/actions/workflows/docs.yml/badge.svg)](https://doeixd.github.io/flue-eve/)
+
 # flue-eve
 
 Eve.dev API surface (`/eve/v1/*`, `flue-eve/client`, `useEveAgent`) powered by [Flue](https://flueframework.com) (`@flue/runtime`), integrated via a Vite plugin.
 
 > Reuse Eve's frontend contract and developer ergonomics; run agents on Flue's harness and deploy anywhere Flue supports.
-
-[![npm](https://img.shields.io/npm/v/flue-eve)](https://www.npmjs.com/package/flue-eve)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Test](https://github.com/doeixd/flue-eve/actions/workflows/test.yml/badge.svg)](https://github.com/doeixd/flue-eve/actions/workflows/test.yml)
-[![Docs](https://github.com/doeixd/flue-eve/actions/workflows/docs.yml/badge.svg)](https://doeixd.github.io/flue-eve/)
 
 ## Quick start
 

@@ -1,4 +1,5 @@
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
@@ -19,7 +20,7 @@ function tryResolve(id: string): string | undefined {
 
 describe("Eve project running on Flue scaffold", () => {
   it("M8-12: generates correct Flue agent files from Eve-like source layout", async () => {
-    const root = mkdtempSync(join(process.cwd(), ".tmp", "flue-eve-e2e-"));
+    const root = mkdtempSync(join(tmpdir(), "flue-eve-e2e-"));
     mkdirSync(join(root, "src"), { recursive: true });
     mkdirSync(join(root, "agent", "tools"), { recursive: true });
     mkdirSync(join(root, "agent", "connections"), { recursive: true });
@@ -110,7 +111,7 @@ describe("Eve project running on Flue scaffold", () => {
   it.runIf(hasFlueRuntime)(
     "M8-12: loads generated Flue app and serves Eve endpoints at runtime",
     async () => {
-      const root = mkdtempSync(join(process.cwd(), ".tmp", "flue-eve-e2e-runtime-"));
+      const root = mkdtempSync(join(tmpdir(), "flue-eve-e2e-runtime-"));
       mkdirSync(join(root, "src"), { recursive: true });
       mkdirSync(join(root, "agent"), { recursive: true });
 
