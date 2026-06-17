@@ -1,6 +1,6 @@
 {
   "name": "flue-eve",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "type": "module",
   "exports": {
     ".": {
@@ -56,12 +56,12 @@
     "test:unit": "vitest run"
   },
   "dependencies": {
-    "@flue-eve/client": "workspace:*",
-    "@flue-eve/compat-server": "workspace:*",
-    "@flue-eve/connections": "workspace:*",
-    "@flue-eve/react": "workspace:*",
-    "@flue-eve/shared": "workspace:*",
-    "@flue-eve/vite": "workspace:*"
+    "@flue-eve/client": "0.1.0",
+    "@flue-eve/compat-server": "0.1.0",
+    "@flue-eve/connections": "0.1.0",
+    "@flue-eve/react": "0.1.0",
+    "@flue-eve/shared": "0.1.0",
+    "@flue-eve/vite": "0.1.2"
   },
   "peerDependencies": {
     "@flue/runtime": "*",
