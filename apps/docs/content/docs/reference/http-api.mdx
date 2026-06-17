@@ -1,0 +1,51 @@
+---
+title: HTTP API Reference
+description: Eve HTTP route reference
+---
+
+# HTTP API
+
+## Health
+
+```http
+GET /eve/v1/health
+```
+
+Response: `{ ok: true, status: "ready" }`
+
+## Info
+
+```http
+GET /eve/v1/info
+```
+
+Response: Agent and server metadata.
+
+## Start session
+
+```http
+POST /eve/v1/session
+Content-Type: application/json
+
+{ "message": "Hello" }
+```
+
+Response: `202 Accepted` with `sessionId` and `continuationToken`.
+
+## Send message
+
+```http
+POST /eve/v1/session/:sessionId
+Content-Type: application/json
+Authorization: Bearer <continuationToken>
+
+{ "message": "Tell me more" }
+```
+
+## Stream
+
+```http
+GET /eve/v1/session/:sessionId/stream?startIndex=0
+```
+
+Response: NDJSON stream (`application/x-ndjson; charset=utf-8`).

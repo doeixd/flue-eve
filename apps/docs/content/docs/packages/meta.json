@@ -1,0 +1,12 @@
+{
+  "title": "Packages",
+  "pages": [
+    "index",
+    "public-package",
+    "server",
+    "client",
+    "react",
+    "vite",
+    "connections"
+  ]
+}

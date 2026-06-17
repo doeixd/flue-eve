@@ -1,0 +1,25 @@
+---
+title: Authentication
+description: Production authentication for Eve routes
+---
+
+# Authentication
+
+Production auth is configured through `resolveEveCompatDefaults`:
+
+```ts
+export default createEveCompatApp({
+  agentName: 'assistant',
+  ...resolveEveCompatDefaults(),
+});
+```
+
+## Auth modes
+
+| Mode | Behavior |
+|------|----------|
+| `none` | No auth — development only |
+| `token` | Bearer token validation |
+| `env` | Read auth config from environment variables |
+
+In production, `auth: 'none'` is rejected unless explicitly opted in.

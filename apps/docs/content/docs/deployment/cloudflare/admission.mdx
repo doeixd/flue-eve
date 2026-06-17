@@ -1,0 +1,18 @@
+---
+title: Cloudflare Admission
+description: Admission strategies on Workers
+---
+
+# Admission
+
+On Cloudflare Workers, the admission options differ from Node:
+
+| Strategy | Available | Notes |
+|----------|-----------|-------|
+| Mock | Yes | Default — no live Flue required |
+| Loopback | No | Workers cannot reach themselves via HTTP |
+| In-process | Experimental | Direct Flue agent call in Worker |
+
+The in-process admission strategy is being developed for Workers.
+In the meantime, mock admission works for development and testing
+the Eve HTTP contract.

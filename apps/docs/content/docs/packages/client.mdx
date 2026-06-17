@@ -1,0 +1,26 @@
+---
+title: Client Package
+description: flue-eve/client reference
+---
+
+# Client
+
+```ts
+import { Client, ClientSession } from 'flue-eve/client';
+```
+
+## Client
+
+| Method | Description |
+|--------|-------------|
+| `createSession(input)` | Start a new session |
+| `reconnect(sessionId, startIndex?)` | Reconnect to existing session |
+
+## ClientSession
+
+| Method | Description |
+|--------|-------------|
+| `send(input)` | Send a user message |
+| `stream()` | Async iterable of NDJSON events |
+| `result()` | Wait for completion and return text |
+| `close()` | Close the session |

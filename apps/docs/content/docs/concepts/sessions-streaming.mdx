@@ -1,0 +1,33 @@
+---
+title: Sessions, Runs, and Streaming
+description: How sessions and streaming work
+---
+
+# Sessions, Runs, and Streaming
+
+## Sessions
+
+A **session** represents a conversation with an agent. Each session has a
+unique `sessionId` (v1: `ses_*` format) and a `continuationToken` for
+resuming the conversation.
+
+## Streaming
+
+The server responds with NDJSON (`application/x-ndjson; charset=utf-8`),
+one JSON event per line. The `startIndex` parameter lets clients reconnect
+and resume from the last known event:
+
+```http
+GET /eve/v1/session/:sessionId/stream?startIndex=42
+```
+
+The server replays events from the journal starting at index 42.
+
+## Comparison
+
+| Concept | Eve | Flue adapter |
+|---------|-----|-------------|
+| Session id | `sessionId` | Flue instance `id` |
+| Resume token | `continuationToken` | Adapter-issued (stable per session) |
+| Stream | NDJSON + `startIndex` | Journal-owned `streamIndex` |
+| Turn submit | `POST /session` returns before completion | `POST /agents/:name/:id` |

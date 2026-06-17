@@ -1,0 +1,30 @@
+---
+title: Events and Journal
+description: How events are translated and stored
+---
+
+# Events and Journal
+
+## Event translation
+
+The **mapper** (`mapFlueToEve()`) converts Flue runtime events to Eve
+events line-by-line:
+
+| Flue event | Eve event |
+|------------|-----------|
+| `agent.start` | `agent.start` |
+| `agent.message` | `agent.content.delta` |
+| `agent.tool_call` | `agent.tool_call` |
+| `agent.complete` | `agent.complete` |
+
+## Journal
+
+The **event journal** is the sole owner of `streamIndex`. Every translated
+event is appended to the journal with an incrementing index. This enables:
+
+- Replay from any `startIndex`
+- Consistent reconnection
+- No Flue offset leakage to Eve clients
+
+Journal persistence adapters support in-memory, SQLite, Redis, and
+Cloudflare KV / Durable Objects.

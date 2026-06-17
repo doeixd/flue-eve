@@ -1,0 +1,11 @@
+{"type":"session.started"}
+{"type":"turn.started"}
+{"type":"message.received"}
+{"type":"step.started"}
+{"type":"message.appended"}
+{"type":"message.appended"}
+{"type":"message.appended"}
+{"type":"message.completed"}
+{"type":"step.completed"}
+{"type":"turn.completed"}
+{"type":"session.waiting"}

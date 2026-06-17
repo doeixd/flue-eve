@@ -1,0 +1,20 @@
+---
+title: Connections Guide
+description: Using third-party connections
+---
+
+# Connections Guide
+
+Connections bridge Flue MCP tools to Eve `connection__*` tool names:
+
+```ts
+import { defineFlueConnection } from '@flue-eve/connections';
+
+export const github = defineFlueConnection({
+  name: 'github',
+  auth: { type: 'oauth' },
+  tools: ['search_repositories', 'get_file_contents'],
+});
+```
+
+The `@vercel/connect` bridge handles OAuth token exchange and refresh.

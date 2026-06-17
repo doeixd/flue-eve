@@ -1,0 +1,35 @@
+---
+title: Contributing
+description: How to contribute to flue-eve
+---
+
+# Contributing
+
+Please read the agent onboarding file at **`AGENTS.md`** and the full
+implementation plan at **`PLAN.md`** before contributing.
+
+## Quick start
+
+```bash
+git clone <repo>
+cd flue-eve-vite
+vp install
+vp test
+```
+
+## Key files
+
+| File | Purpose |
+|------|---------|
+| `PLAN.md` | Authoritative implementation plan |
+| `AGENTS.md` | Agent onboarding and project orientation |
+| `DEPLOYMENT.md` | Production deployment guide |
+| `test/ATTRIBUTION.md` | Eve-derived test provenance |
+| `packages/` | Monorepo packages |
+
+## Testing
+
+```bash
+vp test           # full suite
+vp exec -- vitest run  # specific package
+```

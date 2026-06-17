@@ -1,0 +1,8 @@
+# Auto-detect text files and normalize to LF
+* text=auto
+
+# Shell scripts should always use LF
+*.sh text eol=lf
+
+# Lock files are binary
+pnpm-lock.yaml -text

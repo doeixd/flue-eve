@@ -1,0 +1,16 @@
+{
+  "name": "@flue-eve/example-nitro",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nitro dev",
+    "build": "nitro build",
+    "preview": "nitro preview",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "@flue-eve/client": "workspace:*",
+    "@flue-eve/nitro": "workspace:*",
+    "nitropack": "^2.13.4"
+  }
+}

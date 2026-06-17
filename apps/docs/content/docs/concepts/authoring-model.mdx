@@ -1,0 +1,24 @@
+---
+title: Authoring Model
+description: How to author agents for flue-eve
+---
+
+# Authoring Model
+
+flue-eve agents are **Flue agents** under the hood. You author them using
+Flue's `createAgent` API:
+
+```ts
+// src/agents/assistant.ts
+import { createAgent } from 'flue';
+
+export default createAgent({
+  name: 'assistant',
+  model: 'anthropic/claude-sonnet-4-20250514',
+  instructions: 'You are a helpful assistant.',
+  tools: [/* … */],
+});
+```
+
+Eve-style file layout (`agent/instructions.md`, `agent/tools/*.ts`) is a
+planned future surface — see the [roadmap](/docs/roadmap/full-compatibility).

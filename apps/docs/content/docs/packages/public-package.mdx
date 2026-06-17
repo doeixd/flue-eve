@@ -1,0 +1,23 @@
+---
+title: Public Package
+description: The planned single-package install experience
+---
+
+# Public Package
+
+The target user experience is installing a single package:
+
+```bash
+npm install flue-eve
+```
+
+And using subpath imports:
+
+```ts
+import { flueEve } from 'flue-eve/vite';
+import { Client } from 'flue-eve/client';
+import { useEveAgent } from 'flue-eve/react';
+```
+
+**Status:** Planned. Currently, individual `@flue-eve/*` packages must be
+installed separately.

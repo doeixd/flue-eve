@@ -1,0 +1,38 @@
+---
+title: Node.js
+description: Deploy on Node.js
+---
+
+# Node.js
+
+## Mode A — Single server
+
+The Flue `app.ts` mounts compat-server directly:
+
+```ts
+import { eveCompat, resolveAdmission } from '@flue-eve/compat-server';
+import { Hono } from 'hono';
+
+const app = new Hono();
+
+app.route('/eve/v1', eveCompat({
+  agentName: 'assistant',
+  admission: resolveAdmission({ agentName: 'assistant' }),
+}));
+```
+
+## Mode B — Split origin
+
+Separate the Vite dev/build server from the Flue server. The Vite plugin
+proxies `/eve/v1` to the Flue origin:
+
+```ts
+// vite.config.ts
+export default defineConfig({
+  plugins: [flueEve({
+    proxyTarget: 'http://127.0.0.1:3583',
+  })],
+});
+```
+
+See [split-origin](/docs/deployment/split-origin) for details.

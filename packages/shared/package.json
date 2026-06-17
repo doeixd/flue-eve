@@ -1,0 +1,32 @@
+{
+  "name": "@flue-eve/shared",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:unit": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "license": "MIT",
+  "description": "Shared types, event factories, and protocol constants for @flue-eve packages",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doeixd/flue-eve.git"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}

@@ -1,0 +1,23 @@
+---
+title: Authoring Tools
+description: Write custom tools for your agent
+---
+
+# Authoring Tools
+
+Tools are defined using Flue's tool API:
+
+```ts
+import { tool } from 'flue';
+
+const searchTool = tool({
+  name: 'search',
+  description: 'Search the web',
+  parameters: { query: 'string' },
+  execute: async ({ query }) => {
+    return await searchWeb(query);
+  },
+});
+```
+
+Eve-style `agent/tools/*.ts` auto-load support is planned.

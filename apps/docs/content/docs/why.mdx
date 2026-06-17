@@ -1,0 +1,32 @@
+---
+title: Why flue-eve
+description: Eve ergonomics + Flue openness belong together
+---
+
+# Why flue-eve
+
+[Eve](https://eve.dev) provides a polished developer experience:
+familiar HTTP routes, a well-designed client SDK, and frontend hooks that make
+agent-powered apps feel straightforward.
+
+[Flue](https://flueframework.com) provides an open, portable runtime:
+agents run anywhere Node or Cloudflare Workers run, with durable execution,
+tooling, and sandboxing.
+
+`flue-eve` exists so you can use **both** — adopt Eve's frontend contract
+while keeping your runtime on Flue.
+
+## When to use flue-eve
+
+- You want to follow Eve tutorials and use Eve's client/hook APIs
+- You want to deploy your agent app on **any** Node host or Cloudflare Workers
+- You want the escape hatch to use Flue directly when Eve doesn't expose
+  enough control
+- You are evaluating moving away from Eve's runtime without rewriting
+  your frontend
+
+## When to use Flue directly
+
+- You need features Flue exposes that Eve does not cover
+- You are building custom runtime infrastructure
+- You prefer the Flue SDK over the Eve SDK

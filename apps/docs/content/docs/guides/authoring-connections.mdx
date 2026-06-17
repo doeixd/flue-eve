@@ -1,0 +1,20 @@
+---
+title: Authoring Connections
+description: Configure third-party connections
+---
+
+# Authoring Connections
+
+Connections bridge MCP tools to the agent:
+
+```ts
+import { defineFlueConnection } from '@flue-eve/connections';
+
+export const slack = defineFlueConnection({
+  name: 'slack',
+  auth: { type: 'oauth2' },
+  tools: ['post_message', 'list_channels'],
+});
+```
+
+See [connections guide](/docs/guides/connections) for details.

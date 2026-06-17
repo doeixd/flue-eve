@@ -1,0 +1,33 @@
+---
+title: Event Types
+description: NDJSON event types in the stream
+---
+
+# Event Types
+
+## Agent events
+
+| Type | Description |
+|------|-------------|
+| `agent.start` | Agent turn started |
+| `agent.content.delta` | Text content delta |
+| `agent.content.done` | Content block complete |
+| `agent.tool_call` | Tool call started |
+| `agent.tool_result` | Tool result received |
+| `agent.complete` | Agent turn completed |
+
+## System events
+
+| Type | Description |
+|------|-------------|
+| `error` | Error event |
+| `authorization.required` | Auth or consent required (HITL) |
+| `authorization.response` | User provided input |
+
+## Event format
+
+```json
+{ "type": "agent.content.delta", "data": { "text": "Hello" } }
+```
+
+Each event occupies one line in the NDJSON stream.

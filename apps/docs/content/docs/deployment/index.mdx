@@ -1,0 +1,16 @@
+---
+title: Deployment Overview
+description: Deploy your flue-eve app
+---
+
+# Deployment
+
+flue-eve supports three deployment topologies:
+
+| Mode | Architecture | When to use |
+|------|-------------|-------------|
+| **Node** (Mode A) | Single server: Vite + Flue in one process | Development, simple deploys |
+| **Split-origin** (Mode B) | Separate Vite (static/build) + Node Flue server | Production, separate CDN + API |
+| **Cloudflare Worker** | Edge-deployed compat-server + Flue runtime | Edge deployment |
+
+See the individual deployment pages for details.

@@ -1,0 +1,54 @@
+---
+title: New project
+description: Create a new flue-eve app from scratch
+---
+
+# New project
+
+Create a new Vite + React app with the `flue-eve` Vite plugin.
+
+## 1. Create the app
+
+```bash
+npm create vite@latest my-app -- --template react-ts
+cd my-app
+```
+
+## 2. Install dependencies
+
+```bash
+npm install flue-eve @flue-eve/client
+```
+
+## 3. Add the Vite plugin
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { flueEve } from 'flue-eve/vite';
+
+export default defineConfig({
+  plugins: [react(), flueEve()],
+});
+```
+
+## 4. Use the client
+
+```tsx
+// src/App.tsx
+import { Client } from 'flue-eve/client';
+
+const client = new Client({ baseUrl: '/eve/v1' });
+const session = client.createSession({ message: 'Hello!' });
+
+for await (const event of session.stream()) {
+  console.log(event);
+}
+```
+
+## 5. Run
+
+```bash
+npm run dev
+```

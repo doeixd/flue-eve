@@ -1,0 +1,44 @@
+{
+  "name": "@flue-eve/vite",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./config": {
+      "types": "./dist/config.d.ts",
+      "import": "./dist/config.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:unit": "vitest run"
+  },
+  "dependencies": {
+    "@flue-eve/shared": "workspace:*",
+    "esbuild": "^0.25.0"
+  },
+  "peerDependencies": {
+    "vite": "^5.0.0 || ^6.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
+  },
+  "license": "MIT",
+  "description": "Vite plugin — spawn/proxy flue dev, scaffold, aliases for @flue-eve",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doeixd/flue-eve.git"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}

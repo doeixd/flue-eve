@@ -1,0 +1,13 @@
+---
+title: Cloudflare Troubleshooting
+description: Common Cloudflare deployment issues
+---
+
+# Troubleshooting
+
+| Issue | Likely cause | Fix |
+|-------|-------------|-----|
+| CORS errors | Missing `createEveCorsMiddleware` | Add CORS middleware with frontend origin |
+| 500 on stream | Missing KV/DO binding | Verify `wrangler.toml` bindings match `persistence` config |
+| Events not replaying | Wrong `startIndex` | Ensure journal persistence is configured |
+| Auth 401 | Missing or wrong token | Set `EVE_AUTH_TOKEN` or use `auth: 'none'` for dev |

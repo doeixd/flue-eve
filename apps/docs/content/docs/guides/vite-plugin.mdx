@@ -1,0 +1,29 @@
+---
+title: Vite Plugin
+description: Configure the flue-eve Vite plugin
+---
+
+# Vite Plugin
+
+```ts
+import { defineConfig } from 'vite';
+import { flueEve } from 'flue-eve/vite';
+
+export default defineConfig({
+  plugins: [flueEve({
+    // Optional: Flue agent name (default: 'assistant')
+    agentName: 'assistant',
+    // Optional: scaffold agent files on first run
+    scaffold: true,
+    // Optional: Flue server URL for loopback
+    flueBaseUrl: 'http://127.0.0.1:3583',
+  })],
+});
+```
+
+## What the plugin does
+
+- Proxies `/eve/v1/*` to the Flue server in dev
+- Optionally scaffolds `flue-eve-shim.ts` and `src/agents/`
+- Validates Flue project prerequisites
+- Injects virtual module `virtual:flue-eve-config`

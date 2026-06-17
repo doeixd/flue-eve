@@ -1,0 +1,11 @@
+{
+  "title": "Cloudflare",
+  "pages": [
+    "index",
+    "worker",
+    "kv-do-persistence",
+    "admission",
+    "workers-ai",
+    "troubleshooting"
+  ]
+}

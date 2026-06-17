@@ -1,0 +1,38 @@
+---
+title: Architecture
+description: How flue-eve layers work together
+---
+
+# Architecture
+
+```text
+Browser / scripts
+  │
+  ├── /eve/v1/*  (Eve HTTP contract, NDJSON)
+  │
+  ├── @flue-eve/compat-server
+  │   ├── Hono routes (health, session, stream)
+  │   ├── Event journal (ownes streamIndex)
+  │   └── mapFlueToEve() (Flue event → Eve event translation)
+  │
+  └── Flue agent instance
+      ├── createAgent (harness, tools, sandbox)
+      └── Durable Streams (Flue output)
+```
+
+## Layers
+
+| Layer | Package | Responsibility |
+|-------|---------|----------------|
+| **Vite plugin** | `flue-eve/vite` | Dev proxy, scaffold, aliases |
+| **Compat server** | `@flue-eve/compat-server` | HTTP routes, tokens, journal, NDJSON |
+| **Client** | `flue-eve/client` | Eve SDK parity |
+| **React** | `flue-eve/react` | `useEveAgent` hook |
+| **Runtime** | Flue | Agent harness, execution, tools |
+
+## Key principle
+
+The **Vite plugin** handles integration (proxy, codegen, shims).
+The **compat-server** handles runtime translation.
+**Never put stream mapping in the Vite middleware** if it can live in the
+Flue server process.

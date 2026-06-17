@@ -1,0 +1,29 @@
+---
+title: Compatibility Matrix
+description: Eve surface compatibility status
+---
+
+# Compatibility Matrix
+
+| Eve surface | Status | Milestone |
+|-------------|--------|-----------|
+| `GET /eve/v1/health` | Supported | M0 |
+| `GET /eve/v1/info` | Supported | M5 |
+| `POST /eve/v1/session` | Supported | M0 |
+| `POST /eve/v1/session/:id` | Supported | M0 |
+| `GET /eve/v1/session/:id/stream` | Supported | M0 |
+| NDJSON streaming + `startIndex` | Supported | M1 |
+| `eve/client` — `Client`, `ClientSession` | Supported | M0 |
+| `eve/react` — `useEveAgent` | Supported | M4 |
+| HITL (`input.requested`) | Supported | M5 |
+| Connections (`connection__*` tools) | Supported | M5 |
+| OAuth callback route | Supported | M5 |
+| `agent/instructions.md` | Partial (scaffold) | M7 |
+| `agent/tools/*.ts` | Planned | — |
+| `agent/connections/*.ts` | Planned | — |
+| Workflows | Supported | M8e |
+| Channels | Supported | M8e |
+| SvelteKit plugin | Supported | M8f |
+| Nuxt module | Supported | M8f |
+| Nitro plugin | Supported | M8g |
+| Cloudflare Worker | Supported | M6 |

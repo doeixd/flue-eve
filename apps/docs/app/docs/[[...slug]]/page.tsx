@@ -1,0 +1,47 @@
+import { source } from '@/lib/source';
+import { DocsPage, DocsBody } from 'fumadocs-ui/page';
+
+export default async function DocPage({
+  params,
+}: {
+  params: Promise<{ slug?: string[] }>;
+}) {
+  const { slug } = await params;
+  const page = source.getPage(slug);
+
+  if (!page) {
+    return <div>Page not found</div>;
+  }
+
+  const MDX = page.data.body;
+
+  return (
+    <DocsPage>
+      <DocsBody>
+        <MDX />
+      </DocsBody>
+    </DocsPage>
+  );
+}
+
+export async function generateStaticParams() {
+  const pages = source.getPages();
+  return pages.map((page) => ({
+    slug: page.slugs,
+  }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug?: string[] }>;
+}) {
+  const { slug } = await params;
+  const page = source.getPage(slug);
+  if (!page) return {};
+
+  return {
+    title: page.data.title,
+    description: page.data.description,
+  };
+}

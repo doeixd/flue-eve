@@ -1,0 +1,13 @@
+[
+  {
+    "type": "authorization_required",
+    "name": "linear",
+    "description": "Linear workspace: issues, projects, cycles.",
+    "authorization": {
+      "displayName": "Linear",
+      "url": "https://idp.example.com/oauth/authorize"
+    },
+    "webhookUrl": "https://app.example.com/eve/v1/connections/linear/callback"
+  },
+  { "type": "idle" }
+]

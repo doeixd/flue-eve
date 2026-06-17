@@ -1,0 +1,31 @@
+---
+title: Admission
+description: How user turns are submitted to Flue
+---
+
+# Admission
+
+**Admission** is how the compat-server submits a user turn to Flue and
+consumes the resulting stream.
+
+## Strategies
+
+| Strategy | When used | How it works |
+|----------|-----------|--------------|
+| **Mock** | Default (no Flue server) | Deterministic fake stream, no LLM calls |
+| **Loopback** | `FLUE_BASE_URL` is set | HTTP POST to a running `flue dev` server |
+| **In-process** | Experimental | Direct `createAgent` call in the same process |
+
+## Resolution
+
+```ts
+import { resolveAdmission } from '@flue-eve/compat-server';
+
+const admission = resolveAdmission({
+  agentName: 'assistant',
+  flueBaseUrl: process.env.FLUE_BASE_URL,
+});
+```
+
+When `FLUE_BASE_URL` is not set, mock admission is used — useful for
+development and testing without a running Flue server.

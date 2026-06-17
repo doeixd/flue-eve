@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>flue-eve vanilla chat</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, sans-serif;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #0f1115;
+        color: #e8eaed;
+      }
+      main {
+        width: min(720px, 92vw);
+        display: grid;
+        gap: 1rem;
+      }
+      #log {
+        min-height: 320px;
+        max-height: 50vh;
+        overflow: auto;
+        border: 1px solid #2a2f3a;
+        border-radius: 12px;
+        padding: 1rem;
+        background: #151922;
+        white-space: pre-wrap;
+      }
+      form {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.75rem;
+      }
+      input,
+      button {
+        font: inherit;
+        border-radius: 10px;
+        border: 1px solid #2a2f3a;
+        padding: 0.75rem 1rem;
+        background: #151922;
+        color: inherit;
+      }
+      button {
+        cursor: pointer;
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>flue-eve / Eve-compatible chat</h1>
+      <div id="log">Ready.</div>
+      <form id="form">
+        <input id="input" placeholder="Ask something…" autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

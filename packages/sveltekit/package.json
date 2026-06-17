@@ -1,0 +1,35 @@
+{
+  "name": "@flue-eve/sveltekit",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "SvelteKit integration for @flue-eve — Vite plugin wrapper (M8f)",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@flue-eve/vite": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4",
+    "vite": "^6.4.3"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doeixd/flue-eve.git"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}

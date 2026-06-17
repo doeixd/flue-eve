@@ -1,0 +1,22 @@
+---
+title: Connections and OAuth
+description: How third-party connections and OAuth work
+---
+
+# Connections and OAuth
+
+The connections shim (`@flue-eve/connections`) maps Flue MCP tool calls
+to Eve `connection__*` tool names and handles OAuth flows.
+
+## Tool name mapping
+
+| Flue tool | Eve surface | Status |
+|-----------|-------------|--------|
+| `mcp__github_search` | `connection__github_search` | Supported |
+| `mcp__slack_post` | `connection__slack_post` | Supported |
+
+## OAuth flow
+
+The `@vercel/connect` bridge provides token exchange and refresh for
+OAuth-based connections. Compat-server includes the callback route
+at `/eve/v1/oauth/callback`.

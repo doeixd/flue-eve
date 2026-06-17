@@ -1,0 +1,10 @@
+[
+  { "type": "text_delta", "text": "Repl" },
+  { "type": "text_delta", "text": "y: S" },
+  { "type": "text_delta", "text": "ummarize" },
+  {
+    "type": "result_completed",
+    "result": { "title": "Reply: Summarize" }
+  },
+  { "type": "idle" }
+]

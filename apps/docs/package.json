@@ -1,0 +1,26 @@
+{
+  "name": "@flue-eve/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build"
+  },
+  "dependencies": {
+    "fumadocs-core": "^14.7.0",
+    "fumadocs-mdx": "^11.0.0",
+    "fumadocs-ui": "^14.7.0",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.8.0",
+    "tailwindcss": "^3.4.14",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0"
+  }
+}

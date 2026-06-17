@@ -1,0 +1,20 @@
+---
+title: Vite Plugin Package
+description: flue-eve/vite reference
+---
+
+# Vite Plugin
+
+```ts
+import { flueEve } from 'flue-eve/vite';
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `agentName` | string | `'assistant'` | Default agent name |
+| `scaffold` | boolean | `false` | Scaffold agent files on first run |
+| `spawnFlueDev` | boolean | `true` | Auto-start `flue dev` server |
+| `flueBaseUrl` | string | — | Flue server URL for proxy |
+| `proxyMode` | string | `'eve-routes-only'` | Proxy mode for split-origin |

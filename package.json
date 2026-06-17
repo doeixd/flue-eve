@@ -1,0 +1,45 @@
+{
+  "name": "flue-eve-vite",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vp exec -- pnpm -r run build",
+    "test": "vp test",
+    "test:unit": "vp exec -- vitest run",
+    "test:integration": "vp exec -- vitest run",
+    "test:contract": "vp exec -- vitest run",
+    "test:watch": "vp exec -- vitest",
+    "dev": "vp exec -- pnpm --filter @flue-eve/example-vite-react dev",
+    "dev:vanilla": "vp exec -- pnpm --filter @flue-eve/example-vite-vanilla dev",
+    "dev:integrated": "vp exec -- pnpm --filter @flue-eve/example-flue-integrated dev",
+    "dev:cloudflare": "vp exec -- pnpm --filter @flue-eve/example-cloudflare-eve dev",
+    "flue:dev": "vp exec -- pnpm --filter @flue-eve/example-flue-integrated flue:dev",
+    "smoke": "vp exec -- node scripts/smoke-eve.mjs",
+    "smoke:integrated": "vp exec -- pnpm --filter @flue-eve/example-flue-integrated smoke",
+    "smoke:spike": "vp exec -- pnpm --filter @flue-eve/example-spike smoke",
+    "smoke:cloudflare": "vp exec -- pnpm --filter @flue-eve/example-cloudflare-eve smoke",
+    "smoke:cloudflare:ci": "vp exec -- node scripts/smoke-cloudflare-ci.mjs",
+    "smoke:cloudflare:bg": "node scripts/bg-run.mjs cloudflare-smoke -- vp exec -- node scripts/smoke-cloudflare-ci.mjs",
+    "dev:docs": "vp exec -- pnpm --filter @flue-eve/docs dev",
+    "build:docs": "vp exec -- pnpm --filter @flue-eve/docs build"
+  },
+  "devDependencies": {
+    "@flue-eve/client": "workspace:*",
+    "flue-eve": "workspace:*",
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.3",
+    "vite-plus": "^0.1.24",
+    "vitest": "^3.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doeixd/flue-eve.git"
+  },
+  "volta": {
+    "node": "22.19.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}

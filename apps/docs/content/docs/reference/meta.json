@@ -1,0 +1,12 @@
+{
+  "title": "Reference",
+  "pages": [
+    "compatibility",
+    "eve-to-flue-mapping",
+    "http-api",
+    "events",
+    "config",
+    "errors",
+    "cloudflare"
+  ]
+}

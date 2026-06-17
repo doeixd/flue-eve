@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "flue-eve-worker",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "kv_namespaces": [
+    {
+      "binding": "SESSIONS_KV",
+      "id": "00000000000000000000000000000000",
+      "preview_id": "00000000000000000000000000000000"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [{ "name": "EVE_JOURNAL_DO", "class_name": "EveSessionJournalDO" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["EveSessionJournalDO"] }],
+  "vars": {
+    "EVE_AGENT_NAME": "assistant"
+  }
+}

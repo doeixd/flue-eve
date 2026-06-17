@@ -1,0 +1,16 @@
+{
+  "name": "@flue-eve/example-nuxt",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "@flue-eve/client": "workspace:*",
+    "@flue-eve/nuxt": "workspace:*",
+    "nuxt": "^3.17.2",
+    "vue": "latest"
+  }
+}

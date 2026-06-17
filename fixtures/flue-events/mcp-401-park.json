@@ -1,0 +1,18 @@
+[
+  {
+    "type": "tool_start",
+    "toolCallId": "call_1",
+    "toolName": "mcp__linear__list_issues",
+    "args": {}
+  },
+  {
+    "type": "tool",
+    "toolCallId": "call_1",
+    "toolName": "mcp__linear__list_issues",
+    "result": { "status": 401, "message": "Unauthorized" },
+    "isError": true,
+    "durationMs": 1
+  },
+  { "type": "text_delta", "text": "Ack: List issues" },
+  { "type": "idle" }
+]

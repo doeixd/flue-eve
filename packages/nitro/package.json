@@ -1,0 +1,45 @@
+{
+  "name": "@flue-eve/nitro",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Nitro integration for @flue-eve — Vite plugin + runtime plugin (M8g)",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./runtime-plugin": {
+      "types": "./dist/runtime-plugin.d.ts",
+      "import": "./dist/runtime-plugin.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@flue-eve/compat-server": "workspace:*",
+    "@flue-eve/vite": "workspace:*",
+    "h3": "^1.15.11"
+  },
+  "peerDependencies": {
+    "nitropack": "^2.0.0"
+  },
+  "devDependencies": {
+    "nitropack": "^2.13.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.4.3",
+    "vitest": "^3.2.4"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doeixd/flue-eve.git"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}

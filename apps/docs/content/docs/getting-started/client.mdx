@@ -1,0 +1,27 @@
+---
+title: Client
+description: Use the Eve-compatible client SDK
+---
+
+# Client
+
+```ts
+import { Client } from 'flue-eve/client';
+
+const client = new Client({ baseUrl: '/eve/v1' });
+
+// Start a session
+const session = client.createSession({ message: 'Hello' });
+
+// Read the result
+const result = await session.result();
+console.log(result.text);
+
+// Or use streaming
+for await (const event of session.stream()) {
+  console.log(event.type, event);
+}
+```
+
+Supports reconnect via `startIndex`, resuming with `continuationToken`,
+and multi-turn conversations.

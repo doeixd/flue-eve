@@ -1,0 +1,38 @@
+---
+title: Cloudflare Overview
+description: Deploy flue-eve on Cloudflare
+---
+
+# Cloudflare
+
+flue-eve supports Cloudflare Workers as a first-class deployment target.
+
+## What works
+
+- `createEveWorkerApp` — drop-in Worker entry point
+- KV / Durable Object journal and session persistence
+- CORS middleware for split-origin frontends
+- Mock admission (default, no live Flue server needed)
+
+## What is partial
+
+- **Live Flue admission** — in-process Flue on Workers is experimental.
+  Loopback admission does not apply (Workers cannot reach themselves).
+  See [admission](/docs/deployment/cloudflare/admission) for current status.
+
+## Quick start
+
+```bash
+npm create cloudflare@latest my-worker
+cd my-worker
+npm install flue-eve
+```
+
+```ts
+// src/index.ts
+import { createEveWorkerApp } from '@flue-eve/compat-server/worker';
+
+export default createEveWorkerApp({
+  agentName: 'assistant',
+});
+```

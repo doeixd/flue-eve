@@ -1,0 +1,29 @@
+---
+title: eve.config.ts
+description: Configuration file reference
+---
+
+# eve.config.ts
+
+The optional `eve.config.ts` file at the project root configures the
+compat-server and related packages:
+
+```ts
+import { defineConfig } from 'flue-eve/config';
+
+export default defineConfig({
+  agents: {
+    assistant: {
+      model: 'anthropic/claude-sonnet-4-20250514',
+      instructions: './agent/instructions.md',
+    },
+  },
+  server: {
+    mount: '/eve/v1',
+    auth: 'none',
+    persistence: 'memory',
+  },
+});
+```
+
+See [config reference](/docs/reference/config) for all options.

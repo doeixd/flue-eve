@@ -1,0 +1,32 @@
+---
+title: React
+description: Use useEveAgent in a React app
+---
+
+# React
+
+```bash
+npm install flue-eve
+```
+
+```tsx
+import { useEveAgent } from 'flue-eve/react';
+
+function Chat() {
+  const agent = useEveAgent({
+    agent: 'assistant',
+    api: '/eve/v1',
+  });
+
+  return (
+    <div>
+      {agent.messages.map((m) => (
+        <div key={m.id}>{m.role}: {m.content}</div>
+      ))}
+      <button onClick={() => agent.send('Hello')} disabled={!agent.ready}>
+        Send
+      </button>
+    </div>
+  );
+}
+```

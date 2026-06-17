@@ -1,0 +1,32 @@
+---
+title: KV and Durable Object Persistence
+description: Storage backends for Cloudflare Workers
+---
+
+# KV and DO Persistence
+
+## KV
+
+```ts
+createEveWorkerApp({
+  persistence: {
+    type: 'kv',
+    kvNamespace: MY_KV,
+  },
+});
+```
+
+Best for: read-heavy workloads, eventual consistency is acceptable.
+
+## Durable Object
+
+```ts
+createEveWorkerApp({
+  persistence: {
+    type: 'do',
+    doNamespace: MY_DO,
+  },
+});
+```
+
+Best for: strong consistency, multi-turn sessions that must not lose events.

@@ -1,0 +1,28 @@
+---
+title: React Package
+description: flue-eve/react reference
+---
+
+# React
+
+```ts
+import { useEveAgent } from 'flue-eve/react';
+```
+
+## useEveAgent options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `agent` | string | `'assistant'` | Agent name |
+| `api` | string | `'/eve/v1'` | API base URL |
+
+## Hook return value
+
+| Property | Description |
+|----------|-------------|
+| `messages` | Array of Eve message events |
+| `send(text)` | Send a user message |
+| `stop()` | Stop the current turn |
+| `ready` | True when the agent is ready for input |
+| `input` | HITL input request (if any) |
+| `error` | Last error, if any |

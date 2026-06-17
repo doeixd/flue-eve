@@ -1,0 +1,59 @@
+name: test
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: pnpm
+
+      - name: Install vite-plus
+        run: npm install -g vite-plus@0.1.24
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Test
+        run: vp test
+
+      - name: Build
+        run: vp exec -- pnpm -r run build
+
+  cloudflare-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: pnpm
+
+      - name: Install vite-plus
+        run: npm install -g vite-plus@0.1.24
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Build
+        run: vp exec -- pnpm -r run build
+
+      - name: Cloudflare Worker smoke
+        run: vp exec -- node scripts/smoke-cloudflare-ci.mjs

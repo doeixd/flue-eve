@@ -11,10 +11,29 @@ dist/
 .turbo/
 .tmp/
 
+# Documentation site build output (Next.js)
+apps/docs/out/
+apps/docs/.next/
+apps/docs/.source/
+
+# Example build artifacts
+examples/cloudflare-eve/.wrangler/
+examples/nitro-eve/.nitro/
+examples/nitro-eve/.output/
+
 # IDE
 .vscode/
 .idea/
 
+# TypeScript
+*.tsbuildinfo
+
+# Test coverage
+coverage/
+
 # OS
 .DS_Store
 Thumbs.db
+
+# Terminal transcript artifacts (TUI)
+terminals/

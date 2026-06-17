@@ -1,0 +1,36 @@
+---
+title: Server Package
+description: "@flue-eve/compat-server usage"
+---
+
+# Server
+
+```ts
+import { eveCompat, createEveCompatApp } from '@flue-eve/compat-server';
+```
+
+## eveCompat
+
+Mountable Hono sub-app:
+
+```ts
+import { eveCompat } from '@flue-eve/compat-server';
+
+app.route('/eve/v1', eveCompat({
+  agentName: 'assistant',
+}));
+```
+
+## createEveCompatApp
+
+Standalone app with `/eve/v1` prefix:
+
+```ts
+import { createEveCompatApp } from '@flue-eve/compat-server';
+
+export default createEveCompatApp({
+  agentName: 'assistant',
+});
+```
+
+See [deployment](/docs/deployment) for production configuration.

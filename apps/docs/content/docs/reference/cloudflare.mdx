@@ -1,0 +1,30 @@
+---
+title: Cloudflare Reference
+description: Cloudflare-specific API reference
+---
+
+# Cloudflare Reference
+
+## createEveWorkerApp
+
+```ts
+import { createEveWorkerApp } from '@flue-eve/compat-server/worker';
+
+createEveWorkerApp({
+  agentName: string;
+  persistence?: {
+    type: 'kv' | 'do';
+    kvNamespace?: KVNamespace;
+    doNamespace?: DurableObjectNamespace;
+  };
+  auth?: AuthConfig;
+  admission?: AdmissionFunction;
+})
+```
+
+## Environment variables (Cloudflare)
+
+| Variable | Binding | Purpose |
+|----------|---------|---------|
+| `MY_KV` | `kv_namespaces` | KV namespace binding |
+| `MY_DO` | `durable_objects` | DO namespace binding |

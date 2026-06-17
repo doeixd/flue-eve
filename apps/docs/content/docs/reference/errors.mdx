@@ -1,0 +1,25 @@
+---
+title: Error Reference
+description: HTTP error codes and meanings
+---
+
+# Errors
+
+| Code | Meaning | When |
+|------|---------|------|
+| 400 | Bad request | Invalid `startIndex`, malformed JSON |
+| 401 | Unauthorized | Missing or invalid auth token |
+| 409 | Conflict | Stale `continuationToken` |
+| 410 | Gone | Terminal session cannot be resumed |
+| 500 | Internal error | Server-side failure |
+
+Error responses:
+
+```json
+{
+  "error": {
+    "code": "session_not_found",
+    "message": "Session ses_abc123 not found"
+  }
+}
+```

@@ -1,0 +1,31 @@
+---
+title: Split-Origin (Mode B)
+description: Separate the build server from the Flue server
+---
+
+# Split-Origin (Mode B)
+
+In Mode B, the Vite dev server and the Flue runtime server run on
+separate ports (or separate hosts in production). The Vite plugin
+proxies `/eve/v1/*` requests to the Flue server.
+
+## Configuration
+
+```ts
+flueEve({
+  proxyTarget: 'http://127.0.0.1:3583',
+  proxyMode: 'eve-routes-only',
+})
+```
+
+## CORS
+
+Use `createEveCorsMiddleware` to configure split-origin CORS:
+
+```ts
+import { createEveCorsMiddleware } from '@flue-eve/compat-server';
+
+app.use('/eve/v1/*', createEveCorsMiddleware({
+  origin: ['https://your-frontend.com'],
+}));
+```

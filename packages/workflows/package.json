@@ -1,0 +1,44 @@
+{
+  "name": "@flue-eve/workflows",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Flue workflow runs → Eve stream compatibility (M8e)",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:unit": "vitest run"
+  },
+  "dependencies": {
+    "@flue-eve/shared": "workspace:*",
+    "hono": "^4.7.7"
+  },
+  "peerDependencies": {
+    "@flue/runtime": "*"
+  },
+  "peerDependenciesMeta": {
+    "@flue/runtime": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doeixd/flue-eve.git"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}

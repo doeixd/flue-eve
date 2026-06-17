@@ -1,0 +1,30 @@
+---
+title: Multi-Agent
+description: Set up multiple agents
+---
+
+# Multi-Agent
+
+Multiple agents can be defined using Flue's `createAgent`:
+
+```ts
+// src/agents/researcher.ts
+export default createAgent({
+  name: 'researcher',
+  model: 'anthropic/claude-sonnet-4-20250514',
+  instructions: 'You research topics thoroughly.',
+});
+
+// src/agents/writer.ts
+export default createAgent({
+  name: 'writer',
+  model: 'anthropic/claude-sonnet-4-20250514',
+  instructions: 'You write clear, concise content.',
+});
+```
+
+Configure the agent name in `flueEve()`:
+
+```ts
+flueEve({ agentName: 'researcher' })
+```

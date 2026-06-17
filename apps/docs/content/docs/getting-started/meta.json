@@ -1,0 +1,12 @@
+{
+  "title": "Getting Started",
+  "pages": [
+    "index",
+    "new-project",
+    "from-eve",
+    "frontend-only",
+    "react",
+    "client",
+    "cloudflare-worker"
+  ]
+}

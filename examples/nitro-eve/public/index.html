@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nitro + flue-eve</title>
+  <style>
+    main { max-width: 640px; margin: 2rem auto; font-family: system-ui, sans-serif; }
+    #messages { margin: 1rem 0; }
+    input { width: 70%; padding: 0.5rem; }
+    button { padding: 0.5rem 1rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Nitro + flue-eve</h1>
+    <p>Status: <span id="status">disconnected</span></p>
+    <div id="messages"></div>
+    <form id="chat-form">
+      <input id="input" type="text" placeholder="Type a message..." />
+      <button type="submit">Send</button>
+    </form>
+  </main>
+  <script type="module">
+    import { Client } from "https://cdn.jsdelivr.net/npm/@flue-eve/client/+esm";
+
+    const statusEl = document.getElementById("status");
+    const messagesEl = document.getElementById("messages");
+    const form = document.getElementById("chat-form");
+    const input = document.getElementById("input");
+    const client = new Client({ baseUrl: "/eve/v1" });
+
+    async function init() {
+      try {
+        await client.health();
+        statusEl.textContent = "ready";
+      } catch {
+        statusEl.textContent = "error (compat server not running)";
+      }
+    }
+    init();
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = input.value.trim();
+      if (!msg) return;
+      input.value = "";
+      statusEl.textContent = "sending";
+      appendMsg("user", msg);
+
+      try {
+        const session = await client.createSession({ message: msg });
+        for await (const event of session.stream()) {
+          if (event.type === "message.completed" && event.data?.content) {
+            appendMsg("assistant", event.data.content);
+          }
+          if (event.type === "session.waiting" || event.type === "session.completed") {
+            statusEl.textContent = "ready";
+          }
+        }
+      } catch (err) {
+        statusEl.textContent = "error";
+        appendMsg("system", `Error: ${err.message}`);
+      }
+    });
+
+    function appendMsg(role, content) {
+      const p = document.createElement("p");
+      p.innerHTML = `<strong>${role}:</strong> ${content}`;
+      messagesEl.appendChild(p);
+    }
+  </script>
+</body>
+</html>

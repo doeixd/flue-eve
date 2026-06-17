@@ -1,0 +1,27 @@
+---
+title: Eve and Flue
+description: How Eve and Flue relate in this project
+---
+
+# Eve and Flue
+
+**Eve** is the compatibility target — the HTTP routes, client SDK, and
+frontend hooks this project implements. Eve provides the developer
+experience contract.
+
+**Flue** is the runtime — the agent harness, durable execution, tooling,
+and sandbox that power the actual agent. Flue provides the open,
+deploy-anywhere infrastructure.
+
+| Area | Eve (target) | Flue (runtime) |
+|------|-------------|----------------|
+| HTTP routes | `eve/v1/health`, `/session`, `/stream` | `POST /agents/:name/:id`, Durable Streams |
+| Client SDK | `eve/client` | `@flue/sdk` |
+| Frontend hook | `useEveAgent` | — |
+| Agent model | File-based (`agent/instructions.md`, `agent/tools/`) | `createAgent` config |
+| Streaming | NDJSON with `startIndex` | Durable Streams with `offset` |
+| Deploy targets | Vercel | Node, Cloudflare Workers, any h3-compatible host |
+
+The compat-server translates between the two at runtime: Eve HTTP requests
+are mapped to Flue agent calls, Flue stream events are translated to Eve
+NDJSON events through the journal.

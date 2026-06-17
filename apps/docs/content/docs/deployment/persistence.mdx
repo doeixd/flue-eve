@@ -1,0 +1,19 @@
+---
+title: Persistence
+description: Journal and session persistence adapters
+---
+
+# Persistence
+
+The journal and session store are pluggable via adapters:
+
+| Adapter | Use case |
+|---------|----------|
+| Memory | Development, testing |
+| SQLite | Single-server Node production |
+| Redis | Multi-server Node production |
+| KV | Cloudflare Workers |
+| Durable Object | Cloudflare Workers (strong consistency) |
+
+Configured through the `persistence` option in `eveCompat()` or
+via `resolveEveCompatDefaults()`.

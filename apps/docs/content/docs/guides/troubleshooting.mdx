@@ -1,0 +1,15 @@
+---
+title: Troubleshooting
+description: Common issues and solutions
+---
+
+# Troubleshooting
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| 409 on session start | Stale `continuationToken` | Create a new session |
+| 410 on follow-up | Terminal session | Session has ended, create a new one |
+| 400 bad request | Invalid `startIndex` | Ensure `startIndex` is a non-negative integer |
+| 401 unauthorized | Missing or invalid auth token | Configure auth or use `auth: 'none'` for development |
+| Stream not progressing | Flue agent not running | Start `flue dev` or check `FLUE_BASE_URL` |
+| CORS errors in browser | Missing CORS middleware | Add `createEveCorsMiddleware` to server |

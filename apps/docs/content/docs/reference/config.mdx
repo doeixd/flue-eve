@@ -1,0 +1,35 @@
+---
+title: Configuration Reference
+description: All configuration options
+---
+
+# Configuration
+
+## Vite plugin config
+
+```ts
+flueEve({
+  agentName: string;     // default: 'assistant'
+  scaffold: boolean;     // default: false
+  spawnFlueDev: boolean; // default: true
+  flueBaseUrl: string;   // optional
+  proxyMode: 'eve-routes-only' | 'all';
+})
+```
+
+## Server config
+
+```ts
+eveCompat({
+  agentName: string;
+  admission: AdmissionFunction;
+  auth?: 'none' | 'token';
+  persistence?: PersistenceConfig;
+  mount?: string;         // default: '/eve/v1'
+  cors?: CorsConfig;
+})
+```
+
+## Environment variables
+
+See [env vars](/docs/deployment/env-vars).

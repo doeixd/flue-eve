@@ -1,0 +1,29 @@
+---
+title: Client Guide
+description: Using the Eve-compatible client SDK
+---
+
+# Client Guide
+
+```ts
+import { Client } from 'flue-eve/client';
+
+const client = new Client({ baseUrl: '/eve/v1' });
+
+// Start a session
+const session = client.createSession({ message: 'Hello' });
+
+// Get the result (waits for completion)
+const result = await session.result();
+
+// Or iterate over the stream
+for await (const event of session.stream()) {
+  console.log(event.type, event.data);
+}
+
+// Reconnect from a specific index
+const resumed = await client.reconnect(sessionId, 42);
+for await (const event of resumed.stream()) {
+  console.log(event);
+}
+```

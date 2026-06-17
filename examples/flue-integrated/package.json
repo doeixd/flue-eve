@@ -1,0 +1,26 @@
+{
+  "name": "@flue-eve/example-flue-integrated",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "smoke": "node smoke.mjs",
+    "flue:dev": "flue dev --target node --port 3583"
+  },
+  "dependencies": {
+    "flue-eve": "workspace:*",
+    "@flue/runtime": "1.0.0-beta.1",
+    "hono": "^4.7.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@flue/cli": "1.0.0-beta.1",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}

@@ -1,0 +1,53 @@
+---
+title: From Eve
+description: Migrate an existing Eve project to flue-eve
+---
+
+# From Eve
+
+If you have an existing Eve project, the migration is minimal:
+
+## Change imports
+
+```diff
+- import { Client } from 'eve/client';
++ import { Client } from 'flue-eve/client';
+```
+
+```diff
+- import { useEveAgent } from 'eve/react';
++ import { useEveAgent } from 'flue-eve/react';
+```
+
+## Replace the Vite plugin
+
+```diff
+- import eve from 'eve/vite';
++ import { flueEve } from 'flue-eve/vite';
+
+  export default defineConfig({
+    plugins: [
+-     eve(),
++     flueEve(),
+    ],
+  });
+```
+
+## Update server configuration
+
+Replace your Eve server with the compat-server:
+
+```diff
+- import { createEveServer } from 'eve/server';
++ import { eveCompat } from '@flue-eve/compat-server';
+```
+
+See [deployment](/docs/deployment) for full server setup.
+
+## What stays the same
+
+- All `eve/v1/*` routes
+- NDJSON streaming format
+- `sessionId` and `continuationToken` semantics
+- `useEveAgent` reducer and event types
+- Client reconnect and `startIndex` behavior

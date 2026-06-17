@@ -1,0 +1,16 @@
+{
+  "title": "Guides",
+  "pages": [
+    "vite-plugin",
+    "eve-config",
+    "migrate-existing-eve-agent",
+    "authoring-instructions",
+    "authoring-tools",
+    "authoring-connections",
+    "client",
+    "react",
+    "connections",
+    "multi-agent",
+    "troubleshooting"
+  ]
+}

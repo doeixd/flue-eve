@@ -1,0 +1,13 @@
+{
+  "name": "@flue-eve/example-spike",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "smoke": "node smoke.mjs"
+  },
+  "dependencies": {
+    "flue-eve": "workspace:*",
+    "@hono/node-server": "^1.14.4"
+  }
+}

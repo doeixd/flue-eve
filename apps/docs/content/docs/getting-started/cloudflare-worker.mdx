@@ -1,0 +1,23 @@
+---
+title: Cloudflare Worker
+description: Deploy on Cloudflare Workers
+---
+
+# Cloudflare Worker
+
+Use `createEveWorkerApp` for a Cloudflare Worker that handles Eve routes
+with KV or Durable Object persistence:
+
+```ts
+import { createEveWorkerApp } from '@flue-eve/compat-server/worker';
+
+export default createEveWorkerApp({
+  agentName: 'assistant',
+  persistence: {
+    type: 'kv',
+    kvNamespace: MY_KV,
+  },
+});
+```
+
+See [Cloudflare deployment](/docs/deployment/cloudflare) for detailed setup.

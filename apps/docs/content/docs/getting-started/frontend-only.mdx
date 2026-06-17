@@ -1,0 +1,23 @@
+---
+title: Frontend only
+description: Use the client SDK without a flue-eve server
+---
+
+# Frontend only
+
+If you have an existing Eve-compatible server, you only need the client:
+
+```bash
+npm install flue-eve
+```
+
+```ts
+import { Client } from 'flue-eve/client';
+
+const client = new Client({
+  baseUrl: 'https://your-server.com/eve/v1',
+});
+```
+
+All client methods — `createSession`, `send`, `stream`, `result` — work
+against any Eve-compatible HTTP server.

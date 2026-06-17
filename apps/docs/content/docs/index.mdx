@@ -1,0 +1,36 @@
+---
+title: Introduction
+description: flue-eve — Eve authoring, Flue runtime
+---
+
+# flue-eve
+
+**Eve authoring + frontend/client contract on an open Flue runtime.**
+
+`flue-eve` is a compatibility layer that lets you use Eve-style HTTP routes,
+client SDKs, and React hooks while running your agents on
+[Flue](https://flueframework.com) — an open, deploy-anywhere agent runtime.
+
+## What you get
+
+- **Eve HTTP routes** — `/eve/v1/health`, `/session`, `/stream` work as documented
+- **Eve client SDK** — drop-in `eve/client` or use `flue-eve/client`
+- **`useEveAgent` hook** — drop-in from `eve/react` or use `flue-eve/react`
+- **Vite plugin** — proxy / scaffold / aliases in one dependency
+- **Flue runtime** — agents, tools, durable execution, deploy on Node or Cloudflare
+
+## Quick links
+
+| Path | Purpose |
+|------|---------|
+| `/docs/getting-started/new-project` | Create a new app from scratch |
+| `/docs/getting-started/from-eve` | Migrate an existing Eve project |
+| `/docs/getting-started/frontend-only` | Use the client SDK without a server |
+| `/docs/deployment` | Deploy on Node, split-origin, or Cloudflare Worker |
+| `/docs/reference/compatibility` | Full Eve compatibility matrix |
+| `/docs/concepts/architecture` | How compat-server translates Eve ↔ Flue |
+
+## Project status
+
+**M0–M8 complete.** All planned milestones are implemented. See
+[roadmap](/docs/roadmap/full-compatibility) for remaining polish items.

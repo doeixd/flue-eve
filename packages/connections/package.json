@@ -1,0 +1,55 @@
+{
+  "name": "@flue-eve/connections",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./search": {
+      "types": "./dist/connection-search.d.ts",
+      "import": "./dist/connection-search.js"
+    },
+    "./connect": {
+      "types": "./dist/vercel-connect.d.ts",
+      "import": "./dist/vercel-connect.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:unit": "vitest run"
+  },
+  "dependencies": {
+    "@flue-eve/shared": "workspace:*"
+  },
+  "peerDependencies": {
+    "@flue/runtime": "*",
+    "@vercel/connect": "*"
+  },
+  "peerDependenciesMeta": {
+    "@flue/runtime": {
+      "optional": true
+    },
+    "@vercel/connect": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  },
+  "license": "MIT",
+  "description": "MCP → Eve connection shim, @vercel/connect bridge (M5)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/doeixd/flue-eve.git"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}

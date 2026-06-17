@@ -1,0 +1,50 @@
+---
+title: React Guide
+description: Using the useEveAgent hook
+---
+
+# React Guide
+
+```tsx
+import { useEveAgent } from 'flue-eve/react';
+
+function Chat() {
+  const agent = useEveAgent({
+    agent: 'assistant',
+    api: '/eve/v1',
+  });
+
+  const [input, setInput] = useState('');
+
+  const handleSubmit = () => {
+    agent.send(input);
+    setInput('');
+  };
+
+  return (
+    <div>
+      {agent.ready ? 'Ready' : 'Waiting...'}
+      <div>
+        {agent.messages.map(m => (
+          <div key={m.id}>
+            <strong>{m.role}:</strong> {m.content}
+            {m.toolCalls?.map(tc => (
+              <div key={tc.id}>Tool: {tc.tool.name}</div>
+            ))}
+          </div>
+        ))}
+      </div>
+      <form onSubmit={handleSubmit}>
+        <input value={input} onChange={e => setInput(e.target.value)} />
+        <button type="submit" disabled={!agent.ready}>Send</button>
+      </form>
+    </div>
+  );
+}
+```
+
+## HITL (Human-in-the-loop)
+
+When the agent requests user input, `agent.ready` stays `true` and
+`agent.input?.requested` is available. Call `agent.send(response)` to
+provide the input.
