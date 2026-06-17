@@ -7,6 +7,13 @@ import { describe, expect, it } from "vitest";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
 describe("flue-eve package boundaries", () => {
+  it("publishes the flue-eve CLI bin", () => {
+    const manifest = JSON.parse(readFileSync(resolve(__dirname, "../package.json"), "utf8")) as {
+      bin?: Record<string, string>;
+    };
+    expect(manifest.bin?.["flue-eve"]).toBe("./dist/cli.js");
+  });
+
   it("M8-3: client imports without React, Vite, Hono, or Flue runtime", async () => {
     const mod = await import("flue-eve/client");
     expect(mod.Client).toBeTypeOf("function");

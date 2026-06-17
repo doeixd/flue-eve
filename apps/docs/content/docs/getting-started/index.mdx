@@ -5,8 +5,15 @@ description: Pick the fastest path for a new app, an Eve migration, or a client 
 
 # Getting Started
 
-Pick the path that matches the code you already have. The browser-facing
-contract is Eve-compatible; the server runtime is Flue.
+`flue-eve` has two moving parts:
+
+- A browser-facing Eve contract: `/eve/v1/*`, NDJSON streams, `Client`, and
+  `useEveAgent`.
+- A Flue backend: the agent runtime that owns models, tools, durability, and
+  deployment.
+
+Getting started means wiring those two pieces together. Pick the path that
+matches the code you already have.
 
 ## Prerequisites
 
@@ -33,6 +40,16 @@ contract is Eve-compatible; the server runtime is Flue.
 - Eve-shaped session responses and NDJSON stream events.
 - Mock admission by default, so setup works before provider keys are configured.
 - A path to real Flue execution by setting `FLUE_BASE_URL=http://127.0.0.1:3583`.
+
+## Terms you will see
+
+| Term | Meaning |
+|------|---------|
+| Eve contract | The HTTP routes, stream format, client SDK, and hook that browser code uses |
+| Compat server | The Hono middleware that translates Eve requests/events to and from Flue |
+| Admission | How a user turn is submitted to Flue: mock, loopback HTTP, or runtime integration |
+| Journal | The server-owned event log that makes Eve `startIndex` replay stable |
+| Flue agent | The actual runtime agent that handles models, tools, and durable execution |
 
 ## How it works
 

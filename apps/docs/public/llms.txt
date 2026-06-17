@@ -200,7 +200,7 @@ URL: /docs/reference/events
 URL: /docs/reference/http-api
 
 ## Full Compatibility
-> Milestone status and remaining work
+> Supported, partial, and intentionally unsupported Eve surfaces
 URL: /docs/roadmap/full-compatibility
 
 ## Migration Support

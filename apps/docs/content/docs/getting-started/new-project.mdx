@@ -19,8 +19,12 @@ cd my-app
 ## 2. Install
 
 ```bash
-npm install flue-eve
+npm install flue-eve @flue/runtime hono
+npm install -D @flue/cli
 ```
+
+`flue-eve` provides the adapter, `@flue/runtime` runs the agent, `hono` hosts
+the route tree, and `@flue/cli` provides `flue dev`.
 
 ## 3. Add the Vite plugin
 
@@ -40,12 +44,51 @@ Eve imports to `flue-eve` imports during migration.
 
 ## 4. Initialize the Flue/Eve bridge
 
+Run the CLI from the project root:
+
 ```bash
 npx flue-eve init
 ```
 
-This creates the Flue runtime files, an Eve compat sidecar, and a starter agent.
-The generated server sidecar mounts `@flue-eve/compat-server` under `/eve/v1`.
+It creates the Flue agent file, the Eve compat sidecar, and the app mount when
+`src/app.ts` exists. The sidecar is the important piece: it mounts the Eve compat
+server under `/eve/v1`.
+
+```ts
+// src/flue-eve-shim.ts
+import { eveCompat, resolveAdmissionFromRuntime } from 'flue-eve/server'
+import type { Hono } from 'hono'
+
+export function mountEveCompat(app: Hono): void {
+  app.route(
+    '/eve/v1',
+    eveCompat({
+      agentName: 'assistant',
+      admission: resolveAdmissionFromRuntime('assistant', {
+        flueBaseUrl: process.env.FLUE_BASE_URL,
+      }),
+    }),
+  )
+}
+```
+
+```ts
+// src/app.ts
+import { flue } from '@flue/runtime/routing'
+import { Hono } from 'hono'
+import { mountEveCompat } from './flue-eve-shim.js'
+
+const app = new Hono()
+
+app.route('/', flue())
+mountEveCompat(app)
+
+export default app
+```
+
+This is the core bridge: browser requests keep the Eve route shape, while Flue
+handles agent execution behind the compat server. If you prefer to wire files
+manually, use the generated code above as the reference shape.
 
 ## 5. Render a chat UI
 

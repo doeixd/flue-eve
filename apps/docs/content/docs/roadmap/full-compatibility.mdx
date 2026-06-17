@@ -1,22 +1,28 @@
 ---
 title: Full Compatibility
-description: Milestone status and remaining work
+description: Supported, partial, and intentionally unsupported Eve surfaces
 ---
 
 # Full Compatibility
 
-## Complete milestones
+This page tracks the compatibility boundary: what Eve-facing code can rely on,
+what works with caveats, and what is intentionally left to Flue-native APIs.
 
-| Milestone | Status | Key deliverables |
-|-----------|--------|-----------------|
-| M0–M4 | Done | Routes, journal, client, React hook, HITL |
-| M5 | Done | Connections, OAuth, `/info` routes |
-| M6 | Done | Production auth, persistence (SQLite, Redis, KV/DO), Cloudflare Worker |
-| M7 | Done | Scaffold, `eve.config.ts`, instructions input, Worker CI, smoke gate |
-| M8 | Done | In-process admission, multi-agent, workflows, channels, SvelteKit, Nuxt, Nitro |
-| M8f–M8g | Done | `@flue-eve/sveltekit`, `@flue-eve/nuxt`, `@flue-eve/nitro` |
+## Supported
 
-## Remaining work
+| Surface | Notes |
+|---------|-------|
+| `/eve/v1/*` HTTP routes | Health, info, session start, follow-up, and stream replay |
+| TypeScript client | `Client`, `ClientSession`, streaming, reconnects, `result()` |
+| React hook | `useEveAgent`, reducer output, stop/reset, session persistence |
+| HITL | `input.requested` and `inputResponses` |
+| OAuth park events | Authorization event mapping and callback support |
+| Connections | MCP tools exposed as `connection__*` |
+| Production auth | Bearer auth and fail-closed defaults |
+| Persistence | Memory, file, SQLite, Redis, KV, and Durable Object patterns |
+| Framework integrations | Vite, SvelteKit, Nuxt, Nitro, Node, and Cloudflare-oriented helpers |
+
+## Works with caveats
 
 | Item | Status | Notes |
 |------|--------|-------|
@@ -24,6 +30,14 @@ description: Milestone status and remaining work
 | In-process admission on Workers | Partial | Service Binding works; in-process stabilization |
 | Eve file layout agent discovery | Partial | Scaffold imports declarative layout; full auto-load not planned |
 | Per-turn `continuationToken` rotation | Not planned (v1) | Stable token per session |
+
+## Intentionally outside this adapter
+
+- Reimplementing Eve's runtime.
+- Treating Flue workflow runs as Eve sessions.
+- Exposing Flue stream URLs, offsets, or submission IDs to Eve clients.
+- Eve platform channels such as Slack or Discord; use Flue channel integrations
+  or `@flue-eve/channels`.
 
 See [PLAN.md on GitHub](https://github.com/doeixd/flue-eve/blob/master/PLAN.md)
 for the authoritative implementation plan and per-surface ledger.

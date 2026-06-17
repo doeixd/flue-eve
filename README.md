@@ -1,202 +1,311 @@
 [![npm](https://img.shields.io/npm/v/flue-eve)](https://www.npmjs.com/package/flue-eve)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Test](https://github.com/doeixd/flue-eve/actions/workflows/test.yml/badge.svg)](https://github.com/doeixd/flue-eve/actions/workflows/test.yml)
-[![Docs](https://github.com/doeixd/flue-eve/actions/workflows/docs.yml/badge.svg)](https://doeixd.github.io/flue-eve/)
+[![Docs](https://github.com/doeixd/flue-eve/actions/workflows/docs.yml/badge.svg)](https://doeixd.github.io/flue-eve/docs/)
 
 # flue-eve
 
-Eve.dev API surface (`/eve/v1/*`, `flue-eve/client`, `useEveAgent`) powered by [Flue](https://flueframework.com) (`@flue/runtime`) runtime, integrated via a Vite plugin.
+`flue-eve` is an adapter that lets apps written for [Eve](https://eve.dev)'s
+browser-facing API run against a [Flue](https://flueframework.com) backend.
 
-> Reuse [Eve](https://eve.dev)'s frontend contract and developer ergonomics; run agents on [Flue](https://flueframework.com)'s harness and deploy anywhere Flue supports.
+In practical terms: your UI can keep using Eve-style `/eve/v1/*` routes,
+NDJSON streams, `Client`, and `useEveAgent`, while your agent actually runs on
+Flue's open runtime.
 
-## Quick start
+It exists for teams that like Eve's frontend contract and developer ergonomics
+but want runtime control: normal Flue agents, Flue tools, Flue deployment
+targets, and no dependency on Eve's hosted/runtime layer.
 
-Write an agent the Eve way — `agent/instructions.md` + `agent/tools/*.ts` — then run on Flue.
+## What it provides
 
-### 1. Install
+- `/eve/v1/*` session routes
+- NDJSON streaming
+- `Client` / `ClientSession`
+- `useEveAgent`
+- `sessionId`, `continuationToken`, and `streamIndex`
+
+## What it does not do
+
+- It does not reimplement the Eve runtime.
+- It does not make Flue pretend to be Eve internally.
+- It does not expose Flue stream offsets or runtime internals to browser clients.
+
+The boundary is deliberate: Eve shape at the edge, Flue execution behind it.
+
+**Docs:** https://doeixd.github.io/flue-eve/docs/
+
+## Fastest path
 
 ```bash
-npm install flue-eve
+npm install flue-eve @flue/runtime hono
+npm install -D @flue/cli
 ```
 
-### 2. Define your agent
+1. Add `flueEve()` to Vite so browser calls to `/eve/v1/*` are proxied during
+   development.
+2. Run `npx flue-eve init` to scaffold the Flue agent, compat sidecar, and app
+   mount.
+3. Build your UI with `useEveAgent()` or call the API with `Client`.
+4. Run Flue locally and set `FLUE_BASE_URL=http://127.0.0.1:3583` when you want
+   real agent execution.
 
-```text
-your-project/
-├── agent/
-│   ├── instructions.md
-│   └── tools/
-│       └── lookup-order.ts
-├── src/
-│   └── app.ts
-└── vite.config.ts
-```
+`flue-eve` is the adapter package. `@flue/runtime` runs the agent, `hono` hosts
+the route tree, and `@flue/cli` provides `flue dev`.
 
-`agent/instructions.md`:
-```markdown
-You are an order support agent. Always cite order numbers.
-```
+Flue requires Node.js 22.19.0 or newer. In this repository, use `vp` so commands
+run on the pinned Node version.
 
-`agent/tools/lookup-order.ts`:
+## Vite integration
+
+Use the Vite plugin to proxy `/eve/v1/*`, optionally spawn `flue dev`, and alias
+Eve browser imports during migration.
+
 ```ts
-export default {
-  name: "lookup_order",
-  description: "Look up an order by ID",
-  parameters: {
-    type: "object",
-    properties: { orderId: { type: "string" } },
-    required: ["orderId"],
-  },
-  execute: async ({ orderId }) => `Order ${orderId} is packed and ready.`,
-};
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { flueEve } from "flue-eve/vite";
+
+export default defineConfig({
+  plugins: [
+    react(),
+    flueEve({
+      flueRoot: process.cwd(),
+    }),
+  ],
+});
 ```
 
-### 3. Initialize
+In development, the browser can call same-origin `/eve/v1/*`; the plugin proxies
+those requests to the Flue dev server.
+
+## Mount the compat server
+
+Run the CLI to create the standard bridge:
 
 ```bash
 npx flue-eve init
 ```
 
-Scaffolds Flue runtime files, generates tool adapters, and wires the Eve compat server.
+The command generates the Flue agent file, `src/flue-eve-shim.ts`, and, when
+`src/app.ts` exists, injects the mount call. The generated sidecar looks like
+this:
 
-### 4. Dev
+```ts
+// src/flue-eve-shim.ts
+import { eveCompat, resolveAdmissionFromRuntime } from "flue-eve/server";
+import type { Hono } from "hono";
 
-```bash
-pnpm dev
+export function mountEveCompat(app: Hono): void {
+  app.route(
+    "/eve/v1",
+    eveCompat({
+      agentName: "assistant",
+      admission: resolveAdmissionFromRuntime("assistant", {
+        flueBaseUrl: process.env.FLUE_BASE_URL,
+      }),
+    }),
+  );
+}
 ```
 
-Vite + Flue start together. Your browser at `http://localhost:5173` talks to `/eve/v1/*` same-origin.
+```ts
+// src/app.ts
+import { flue } from "@flue/runtime/routing";
+import { Hono } from "hono";
+import { mountEveCompat } from "./flue-eve-shim.js";
 
-```bash
-curl -X POST http://localhost:5173/eve/v1/session \
-  -H 'content-type: application/json' \
-  -d '{"message":"Find order 42"}'
-curl -N http://localhost:5173/eve/v1/session/<sessionId>/stream
+const app = new Hono();
+
+app.route("/", flue());
+mountEveCompat(app);
+
+export default app;
 ```
 
-### 5. Connect from React
+Set `FLUE_BASE_URL=http://127.0.0.1:3583` to loop back to a running `flue dev`
+server. Without real admission configured, use mock admission for deterministic
+local contract tests.
 
-```tsx
-import { useEveAgent } from "flue-eve/react";
-import { createEveSessionPersistence } from "flue-eve/react";
-
-const persistence = createEveSessionPersistence({ storage: localStorage });
-const { messages, send, ready, stop } = useEveAgent(persistence);
-```
-
-Or use the `eve/react` import — the Vite plugin aliases it transparently:
-
-```tsx
-import { useEveAgent } from "eve/react"; // same as flue-eve/react
-```
-
-## Migrate from Eve
-
-Run the migration scanner:
+To inspect an existing Eve project before scaffolding, run:
 
 ```bash
 npx flue-eve scan
+npx flue-eve scan --strict
 ```
 
-| Tier | Description | Migration |
-|------|-------------|-----------|
-| **Tier 0** | `useEveAgent`, `eve/client` imports in browser code | Zero-touch — aliases work |
-| **Tier 1** | `agent/instructions.md`, `agent/tools/*.ts`, `eve.config.ts`, simple MCP connections | Auto — scaffold generates Flue modules |
-| **Tier 2** | `defineTool`, `defineMcpClientConnection` with complex logic, `src/agent/` layout | Warning + manual review |
-| **Tier 3** | Workflow SDK, platform channels, schedules, subagents, `@eve/platform` | Blocked — report explains alternatives |
+## React
 
-Most Eve chat agents are **Tier 0/1**. Run `npx flue-eve scan --strict` in CI.
+`flue-eve/react` provides an Eve-compatible `useEveAgent` hook.
 
-### Code migration skill
+```tsx
+import { useState } from "react";
+import { useEveAgent } from "flue-eve/react";
 
-This repo includes a [skills.sh](https://skills.sh)-compatible **[flue-eve skill](./flue-eve/SKILL.md)** for AI coding agents. It guides Claude Code, Cursor, or any skills-compatible agent through the full migration workflow: assess, scaffold, configure, verify.
+export function Chat() {
+  const agent = useEveAgent();
+  const [message, setMessage] = useState("");
+  const busy = agent.status === "submitted" || agent.status === "streaming";
 
-```bash
-# Install the skill from the repo
-npx skills add doeixd/flue-eve
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (!message.trim() || busy) return;
+        void agent.send({ message });
+        setMessage("");
+      }}
+    >
+      {agent.data.messages.map((item) => (
+        <article key={item.id}>
+          <strong>{item.role}</strong>
+          {item.parts.map((part, index) =>
+            part.type === "text" ? <p key={index}>{part.text}</p> : null,
+          )}
+        </article>
+      ))}
+
+      <input value={message} onChange={(event) => setMessage(event.target.value)} />
+      <button disabled={busy || !message.trim()}>Send</button>
+      {busy ? <button type="button" onClick={agent.stop}>Stop</button> : null}
+    </form>
+  );
+}
 ```
 
-Once installed, ask your agent:
+The hook returns `{ data, status, error, events, session, send, stop, reset }`.
+Use `createEveSessionPersistence()` when you want localStorage-backed session
+resume.
 
-> "Migrate this Eve project to flue-eve"
+## TypeScript client
 
-The agent will scan the codebase, scaffold Flue runtime files, wire the compat server, and verify the setup.
+Use `flue-eve/client` from scripts, tests, server jobs, or custom UIs.
+
+```ts
+import { Client } from "flue-eve/client";
+
+const client = new Client({ host: "http://127.0.0.1:5173" });
+const session = client.session();
+
+const response = await session.send("Hello");
+
+for await (const event of response) {
+  console.log(event.type);
+}
+
+const result = await (await session.send("Summarize the session")).result();
+console.log(result.status, result.message, result.data);
+```
+
+Use `host: ""` for same-origin browser calls. Use a full origin for scripts or
+split-origin deployments. The client appends `/eve/v1/*` paths itself.
 
 ## Architecture
 
 ```text
 Browser / scripts
-  → /eve/v1/*         (Eve HTTP contract, NDJSON)
-  → @flue-eve/compat-server  (journal, tokens, mapper, auth)
-  → Flue agent instance      (POST /agents/:name/:id, Durable Streams)
+  -> /eve/v1/*                 Eve HTTP contract, NDJSON
+  -> @flue-eve/compat-server   journal, tokens, mapper, auth
+  -> @flue/runtime             agent harness, tools, durable streams
 ```
 
-**Key split:** the Vite plugin handles integration (proxy, codegen, aliases). The `@flue-eve/compat-server` handles runtime translation — never put stream mapping in Vite middleware if it can live in the Flue server process.
+The Vite plugin integrates. The compat server translates. The event journal is
+the sole owner of Eve `streamIndex`, so reconnects replay Eve events rather than
+leaking Flue stream offsets.
 
-## Compatibility matrix
+## Eve compatibility
 
-| Eve surface | Status | Notes |
-|-------------|--------|-------|
-| `GET /eve/v1/health` | Supported | `{ ok, status: "ready", workflowId }` |
-| `GET /eve/v1/info` | Supported | Tools include `connection__*` when configured |
-| `POST /eve/v1/session` | Supported | 202 + `sessionId` + `continuationToken` |
-| `POST /eve/v1/session/:id` | Supported | 200 follow-up; stable token (v1) |
-| `GET /eve/v1/session/:id/stream` | Supported | NDJSON + `startIndex` replay |
-| `eve/client` (`Client`, `ClientSession`) | Supported | Reconnect, `result()`, bearer auth |
-| `useEveAgent` | Supported | HITL projection, `stop()`, localStorage resume |
-| `input.requested` / `inputResponses` | Supported | HITL park-resume |
-| `authorization.*` OAuth park | Supported | Mock + callback route |
-| `mcp__*` → `connection__*` tools | Supported | Via `@flue-eve/connections` |
-| `outputSchema` / `result.completed` | Supported | Client `result()` extraction |
-| Same-origin Vite dev | Supported | Plugin proxy to `flue dev` |
-| Bearer auth (production) | Supported | `EVE_AUTH_BEARER` / fail-closed |
-| Journal persistence (Node) | Supported | memory, file, SQLite, Redis |
-| Cloudflare Worker | Partial | KV/DO journal; mock admission |
-| Multi-agent sessions | Supported | `POST /session { agent }` |
-| Per-turn token rotation | Not supported (v1) | Stable token per session |
-| Eve filesystem discovery | Not supported | Use Flue `src/agents/*.ts` |
-| Eve platform channels | Not supported | Use Flue `@flue/*` channels |
+Supported:
+
+- `GET /eve/v1/health`
+- `GET /eve/v1/info`
+- `POST /eve/v1/session`
+- `POST /eve/v1/session/:id`
+- `GET /eve/v1/session/:id/stream?startIndex=N`
+- `eve/client`-compatible `Client` and `ClientSession`
+- `eve/react`-compatible `useEveAgent`
+- HITL `input.requested` / `inputResponses`
+- OAuth park events
+- `outputSchema` / `result.completed`
+- Vite, SvelteKit, Nuxt, Nitro, Node, and Cloudflare-oriented integrations
+
+Not a goal for v1:
+
+- Reimplementing the Eve runtime
+- Full Eve filesystem auto-discovery as the runtime source of truth
+- Eve platform channels such as Slack or Discord
+- Exposing Flue stream internals to Eve clients
+
+See the [compatibility matrix](https://doeixd.github.io/flue-eve/docs/reference/compatibility/)
+for the detailed ledger.
 
 ## Packages
 
-The `flue-eve` package bundles every subpackage under subpath imports:
+The public `flue-eve` package exposes the main subpaths:
 
-| Subpath | Package |
+| Import | Purpose |
+|--------|---------|
+| `flue-eve/client` | Eve-compatible TypeScript client |
+| `flue-eve/react` | `useEveAgent` and session persistence helper |
+| `flue-eve/vite` | Vite plugin |
+| `flue-eve/server` | Hono compat server middleware |
+| `flue-eve/server/worker` | Cloudflare Worker app helpers |
+| `flue-eve/connections` | MCP / connection shim |
+| `flue-eve/connections/search` | `connection__search` support |
+| `flue-eve/connections/connect` | Optional `@vercel/connect` bridge |
+
+The monorepo also contains lower-level `@flue-eve/*` packages used by the
+aggregator.
+
+## Examples
+
+| Example | Purpose |
 |---------|---------|
-| `flue-eve` | Aggregator — re-exports all |
-| `flue-eve/client` | `@flue-eve/client` — Eve SDK parity |
-| `flue-eve/react` | `@flue-eve/react` — `useEveAgent` |
-| `flue-eve/vite` | `@flue-eve/vite` — Vite plugin |
-| `flue-eve/server` | `@flue-eve/compat-server` — Hono middleware |
-| `flue-eve/server/worker` | `@flue-eve/compat-server/worker` — Cloudflare Worker |
-| `flue-eve/connections` | `@flue-eve/connections` — MCP shim |
-| `flue-eve/connections/search` | `@flue-eve/connections/search` — connection search |
-| `flue-eve/connections/connect` | `@flue-eve/connections/connect` — `@vercel/connect` bridge |
+| `examples/flue-integrated` | Vite UI + Flue app + Eve compat sidecar |
+| `examples/vite-react` | React chat against an Eve-compatible server |
+| `examples/vite-vanilla` | Fetch-based browser client |
+| `examples/cloudflare-eve` | Worker-oriented compat server |
+| `examples/sveltekit-eve` | SvelteKit wrapper |
+| `examples/nuxt-eve` | Nuxt module |
+| `examples/nitro-eve` | Nitro plugin |
 
-## Production
+## Development
 
-See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for Node reverse-proxy, env vars, journal backends, and Cloudflare Workers.
-
-## Contributing
+Use `vp` so commands run on the pinned Node version.
 
 ```bash
 git clone https://github.com/doeixd/flue-eve.git
 cd flue-eve
 npm install -g vite-plus
 vp install
-pnpm dev:integrated    # Vite UI + flue dev + Eve shim
-vp test                # 375+ tests across 67 test files
+vp test
+vp exec -- pnpm -r run build
 ```
 
-## Docs
+Useful scripts:
 
-- [PLAN.md](./PLAN.md) — architecture, milestones, invariants
-- [AGENTS.md](./AGENTS.md) — onboarding for coding agents
-- [DEPLOYMENT.md](./DEPLOYMENT.md) — production deployment
-- [flue-eve/](./flue-eve/) — AI coding agent skill for migration workflows
+```bash
+pnpm dev:integrated      # Vite UI + flue dev + Eve shim
+pnpm dev:docs            # docs site
+pnpm build:docs          # static docs export
+pnpm smoke:spike         # mock HTTP smoke test
+```
+
+The test suite covers the compatibility server, client, React hook, Vite
+integration, deployment helpers, workflows, channels, and examples.
+
+## Documentation
+
+- [Published docs](https://doeixd.github.io/flue-eve/docs/) — start here
+- [DEPLOYMENT.md](./DEPLOYMENT.md) — production deploy notes
+- [PLAN.md](./PLAN.md) — implementation plan and invariants
+- [AGENTS.md](./AGENTS.md) — coding-agent onboarding
+- [flue-eve/](./flue-eve/) — migration skill for AI coding agents
 - [Eve docs](https://eve.dev/docs/introduction) — compatibility target
 - [Flue docs](https://flueframework.com/docs/getting-started/quickstart/) — runtime
 
 ## License
 
-MIT. Eve-derived test fixtures (under `fixtures/` and ported test files) are attributed in [`test/ATTRIBUTION.md`](./test/ATTRIBUTION.md) and remain under Apache-2.0 per their upstream origin.
+MIT. Eve-derived test fixtures and ported test files are attributed in
+[`test/ATTRIBUTION.md`](./test/ATTRIBUTION.md) and remain under Apache-2.0 per
+their upstream origin.

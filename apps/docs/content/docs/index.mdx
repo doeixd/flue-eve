@@ -5,14 +5,27 @@ description: Eve-compatible client, React, and HTTP APIs running on Flue
 
 # flue-eve
 
-`flue-eve` keeps the parts of [Eve](https://eve.dev) that application code
-depends on: `/eve/v1/*` routes, NDJSON streaming, the TypeScript client, and
-`useEveAgent`. The work runs on [Flue](https://flueframework.com), so the agent
-harness, tools, durability, and deployment target stay open.
+`flue-eve` is an adapter that lets apps written for [Eve](https://eve.dev)'s
+browser-facing API run against a [Flue](https://flueframework.com) backend.
 
-The intent is practical compatibility, not a fork. Existing Eve browser code
-should keep talking to the same session protocol while server-side execution is
-owned by Flue.
+In practical terms: your UI can keep using Eve-style `/eve/v1/*` routes,
+NDJSON streams, `Client`, and `useEveAgent`, while your agent actually runs on
+Flue's open runtime.
+
+It exists for teams that like Eve's frontend contract and developer ergonomics
+but want runtime control: normal Flue agents, Flue tools, Flue deployment
+targets, and no dependency on Eve's hosted/runtime layer.
+
+## How to think about it
+
+`flue-eve` is not a fork of Eve and not a replacement for Flue. It is the
+translation layer between the two:
+
+- Eve shape at the edge: HTTP routes, stream events, client SDK, React hook.
+- Flue execution inside: agent harness, tools, model configuration, durability,
+  sandboxing, and deployment.
+- A compat server in the middle: session tokens, event journal, NDJSON, and
+  Flue-to-Eve event mapping.
 
 ## What stays familiar
 
@@ -60,6 +73,17 @@ The journal is the important boundary: Eve clients reconnect with `startIndex`,
 and the compat server replays journaled Eve events instead of exposing Flue
 stream offsets.
 
+## Get started
+
+1. Install `flue-eve`.
+2. Add `flueEve()` to Vite for same-origin development proxying.
+3. Run `npx flue-eve init` to scaffold the compat sidecar and app mount.
+4. Render a UI with `useEveAgent()` or call the API with `Client`.
+
+Start with [New project](/docs/getting-started/new-project) for a complete
+walkthrough, or [From Eve](/docs/getting-started/from-eve) if you already have
+an Eve app.
+
 ## Quick links
 
 | Path | Purpose |
@@ -78,10 +102,3 @@ A migration skill is bundled for coding agents that understand skills:
 ```bash
 npx skills add doeixd/flue-eve
 ```
-
-## Project status
-
-M0-M8 are complete. The repo has 380 Vitest tests across 68 files, with the
-remaining known polish item around live MCP 401 behavior against a real MCP
-server. See the [compatibility matrix](/docs/reference/compatibility) and
-[roadmap](/docs/roadmap/full-compatibility) for the detailed ledger.

@@ -210,6 +210,14 @@ export const flueEveVite = flueEve;
 
 export { waitForUpstream } from "./health.js";
 export {
+  formatMigrationReport,
+  isStrictMigrationBlocked,
+  scanMigration,
+  type MigrationFinding,
+  type MigrationReport,
+  type MigrationTier,
+} from "./migration-scanner.js";
+export {
   runScaffold,
   injectAppMount,
   renderSidecar,
