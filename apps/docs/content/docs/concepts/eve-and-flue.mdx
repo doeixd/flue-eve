@@ -1,27 +1,95 @@
 ---
 title: Eve and Flue
-description: How Eve and Flue relate in this project
+description: How Eve and Flue relate in flue-eve — what each provides and how they map
 ---
 
 # Eve and Flue
 
-**Eve** is the compatibility target — the HTTP routes, client SDK, and
-frontend hooks this project implements. Eve provides the developer
-experience contract.
+flue-eve is not a fork of either project. It's a bridge that translates between
+Eve's frontend contract and Flue's open runtime.
 
-**Flue** is the runtime — the agent harness, durable execution, tooling,
-and sandbox that power the actual agent. Flue provides the open,
-deploy-anywhere infrastructure.
+## What Eve provides (the contract)
 
-| Area | Eve (target) | Flue (runtime) |
-|------|-------------|----------------|
-| HTTP routes | `eve/v1/health`, `/session`, `/stream` | `POST /agents/:name/:id`, Durable Streams |
-| Client SDK | `eve/client` | `@flue/sdk` |
-| Frontend hook | `useEveAgent` | — |
-| Agent model | File-based (`agent/instructions.md`, `agent/tools/`) | `createAgent` config |
-| Streaming | NDJSON with `startIndex` | Durable Streams with `offset` |
-| Deploy targets | Vercel | Node, Cloudflare Workers, any h3-compatible host |
+Eve defines a **frontend developer experience**:
 
-The compat-server translates between the two at runtime: Eve HTTP requests
-are mapped to Flue agent calls, Flue stream events are translated to Eve
-NDJSON events through the journal.
+- HTTP routes at `/eve/v1/health`, `/eve/v1/session`, `/eve/v1/session/:id/stream`
+- An NDJSON event stream with `sessionId`, `continuationToken`, and `streamIndex`
+- Client SDKs (`eve/client`) and React hooks (`useEveAgent`)
+- A filesystem-based agent authoring model (`agent/instructions.md`, `agent/tools/`)
+
+Eve's contract is stable and well-documented. flue-eve implements this contract
+exactly — the same routes, the same event shapes, the same client API — but
+**translates to Flue** at runtime.
+
+## What Flue provides (the runtime)
+
+Flue is an **open agent runtime**:
+
+- Agent harness (`createAgent`) with model execution, tools, and sandbox
+- Durable agent instances with persistent state via Durable Streams
+- Deploy to Node.js, Cloudflare Workers, Docker, CI
+- Code-first agent modules with full TypeScript tool support
+
+Flue's API is different from Eve's: `POST /agents/:name/:id` instead of
+`POST /eve/v1/session`, Durable Streams instead of NDJSON, no continuation
+tokens, no `useEveAgent`.
+
+## How they interact
+
+```text
+┌─────────────┐         ┌───────────────────┐         ┌──────────────┐
+│  Eve client │ ──────→ │ @flue-eve/compat- │ ──────→ │ @flue/runtime │
+│  / React UI │ ←────── │ server            │ ←────── │              │
+└─────────────┘  NDJSON └───────────────────┘  Flue   └──────────────┘
+                         Event journal +       Streams
+                         mapFlueToEve()
+```
+
+The compat-server:
+1. Receives Eve HTTP requests
+2. Translates them to Flue agent calls
+3. Consumes Flue's Durable Streams output
+4. Maps Flue events → Eve events through the journal
+5. Returns Eve NDJSON stream to the client
+
+## Side-by-side comparison
+
+| Area | Eve (target) | Flue (runtime) | flue-eve adapter |
+|------|-------------|----------------|-----------------|
+| **HTTP routes** | `eve/v1/health`, `/session`, `/stream` | `POST /agents/:name/:id`, `GET /agents/:name/:id` | compat-server translates |
+| **Session id** | `sessionId` (`ses_*` format) | instance `id` | `sessionId` = instance `id` (v1) |
+| **Resume token** | `continuationToken` | none | adapter-issued, stable per session |
+| **Stream format** | NDJSON, one JSON per line | Durable Streams (internal protocol) | `mapFlueToEve()` + journal |
+| **Replay** | `?startIndex=N` | Durable Stream offsets | journal replays from index |
+| **Client SDK** | `eve/client` | `@flue/sdk` | `flue-eve/client` (drop-in) |
+| **React hook** | `useEveAgent` | none | `flue-eve/react` (drop-in) |
+| **Agent authoring** | `agent/instructions.md`, `agent/tools/` | `createAgent` config | scaffold imports declarative layout |
+| **Deploy** | Vercel | Node, Cloudflare, Docker | all Flue targets |
+| **Workflows** | Vercel Workflow SDK | `POST /workflows/:name`, `GET /runs/:runId` | `@flue-eve/workflows` bridge |
+| **Channels** | `slackChannel()`, `defineChannel` | `@flue/slack`, `/channels/:name/*` | `@flue-eve/channels` bridge |
+
+## What flue-eve is NOT
+
+- **Not an Eve fork** — it doesn't reimplement Eve's runtime. It translates
+  Eve's contract to Flue's runtime.
+- **Not a Flue fork** — Flue runs unmodified. The compat-server is layered on
+  top as a Hono middleware.
+- **Not a mandatory layer** — you can use Flue directly when you need features
+  flue-eve doesn't expose. The sidecar is a standalone file; delete it to
+  remove Eve compatibility.
+
+## When to use flue-eve vs Flue directly
+
+Use **flue-eve** when:
+- You want the Eve HTTP/client contract without the Eve runtime
+- You're migrating from Eve and want your frontend to keep working
+- You want to deploy on non-Vercel platforms with Eve-shaped APIs
+- You want the `useEveAgent` hook and Eve client SDK
+
+Use **Flue directly** when:
+- You need full Flue API access (skills, sandbox, custom harness)
+- You don't need Eve HTTP routes
+- You're building backend-only agents
+- You prefer `@flue/sdk` over `eve/client`
+
+See [why flue-eve](/docs/why) for the rationale behind this project.

@@ -1,5 +1,5 @@
-import { createPreset } from 'fumadocs-ui/tailwind-plugin';
-import type { Config } from 'tailwindcss';
+import { createPreset } from 'fumadocs-ui/tailwind-plugin'
+import type { Config } from 'tailwindcss'
 
 export default {
   content: [
@@ -8,5 +8,9 @@ export default {
     './lib/**/*.{ts,tsx}',
     './node_modules/fumadocs-ui/dist/**/*.js',
   ],
-  presets: [createPreset()],
-} satisfies Config;
+  presets: [
+    createPreset({
+      preset: 'ocean',
+    }),
+  ],
+} satisfies Config

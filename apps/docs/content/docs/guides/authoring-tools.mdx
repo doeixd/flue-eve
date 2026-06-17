@@ -5,19 +5,73 @@ description: Write custom tools for your agent
 
 # Authoring Tools
 
-Tools are defined using Flue's tool API:
+Tools give your agent the ability to take actions. Define them in two styles.
+
+## Flue-native tools
 
 ```ts
-import { tool } from 'flue';
+// src/tools/search.ts
+import { tool } from '@flue/runtime'
 
-const searchTool = tool({
+export default tool({
   name: 'search',
   description: 'Search the web',
-  parameters: { query: 'string' },
-  execute: async ({ query }) => {
-    return await searchWeb(query);
+  parameters: {
+    type: 'object',
+    properties: {
+      query: { type: 'string' },
+    },
+    required: ['query'],
   },
-});
+  execute: async ({ query }) => {
+    return await searchWeb(query)
+  },
+})
 ```
 
-Eve-style `agent/tools/*.ts` auto-load support is planned.
+Register in your agent:
+
+```ts
+import { createAgent } from '@flue/runtime'
+import searchTool from './tools/search'
+
+export default createAgent({
+  model: 'anthropic/claude-sonnet-4-6',
+  tools: [searchTool],
+})
+```
+
+## Eve-style (declarative)
+
+Place tool files in `agent/tools/`:
+
+```ts
+// agent/tools/get-weather.ts
+export default {
+  name: "get_weather",
+  description: "Get weather for a city",
+  parameters: {
+    type: "object",
+    properties: { city: { type: "string" } },
+    required: ["city"],
+  },
+  execute: async ({ city }) => ({ city, temp: 72, condition: "sunny" }),
+}
+```
+
+Run `npx flue-eve init` to generate Flue tool adapters from these declarations.
+
+## Tool schema
+
+Both styles produce the same runtime shape:
+
+| Field | Type | Required |
+|-------|------|----------|
+| `name` | `string` | Yes |
+| `description` | `string` | Yes |
+| `parameters` | JSON Schema | Yes |
+| `execute` | `async function` | Yes |
+
+See [authoring model](/docs/concepts/authoring-model) for how these two styles
+relate, and [connections guide](/docs/guides/connections) for defining MCP
+connections.

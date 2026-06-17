@@ -1,6 +1,6 @@
 ---
 title: Events and Journal
-description: How events are translated and stored
+description: How events are translated, stored, and replayed
 ---
 
 # Events and Journal
@@ -13,18 +13,75 @@ events line-by-line:
 | Flue event | Eve event |
 |------------|-----------|
 | `agent.start` | `agent.start` |
-| `agent.message` | `agent.content.delta` |
+| `agent.message` | `agent.content.delta` → `message.appended` |
 | `agent.tool_call` | `agent.tool_call` |
+| `agent.tool_result` | `agent.tool_result` |
 | `agent.complete` | `agent.complete` |
+| `result.completed` | `result.completed` |
+
+### Connection tool naming
+
+MCP tools from Flue connections are renamed to use the `connection__` prefix:
+
+```text
+Flue tool: mcp__linear_search_issues
+Eve event: tool_call { name: "connection__linear_search" }
+```
+
+This mapping is handled by `@flue-eve/connections` and the mapper automatically.
+
+### HITL and auth events
+
+The mapper handles park/resume cycles:
+
+| Scenario | Events |
+|----------|--------|
+| Human-in-the-loop | `input.requested` → (client sends `inputResponses`) → resume |
+| OAuth authorization | `authorization.required` → (callback completes) → `authorization.granted` → resume |
 
 ## Journal
 
 The **event journal** is the sole owner of `streamIndex`. Every translated
-event is appended to the journal with an incrementing index. This enables:
+event is appended with an incrementing index. This enables:
 
 - Replay from any `startIndex`
-- Consistent reconnection
-- No Flue offset leakage to Eve clients
+- Consistent reconnection after network drops
+- No Flue Durable Streams offset leakage to Eve clients
 
-Journal persistence adapters support in-memory, SQLite, Redis, and
-Cloudflare KV / Durable Objects.
+### How replay works
+
+1. Client reconnects with `?startIndex=N`
+2. Compat-server reads journal entries from index N onward
+3. If tail mode (no `startIndex` or beyond current journal), server waits for new events
+4. Events are streamed via NDJSON, one per line
+
+### Persistence adapters
+
+| Adapter | Use case |
+|---------|----------|
+| **In-memory** (default) | Dev, tests |
+| **SQLite** | Single-node production |
+| **File** | Single-node, no SQLite |
+| **Redis** | Multi-node Node.js |
+| **Cloudflare KV + DO** | Cloudflare Workers |
+
+Configure journal persistence per [deployment](/docs/deployment/persistence).
+
+## Event catalog
+
+| Event | When emitted |
+|-------|-------------|
+| `session.started` | New session created |
+| `agent.start` | Agent turn begins |
+| `agent.content.delta` | Streaming text fragment |
+| `message.appended` | Complete message state update |
+| `agent.tool_call` | Tool invocation started |
+| `agent.tool_result` | Tool result returned |
+| `agent.complete` | Agent turn finished |
+| `result.completed` | Structured result (when `outputSchema` used) |
+| `session.waiting` | Session ready for next turn (unlocks composer) |
+| `session.failed` | Terminal error |
+| `input.requested` | HITL — waiting for user input |
+| `authorization.required` | OAuth — waiting for connection auth |
+
+For the authoritative Flue → Eve event mapping, see [eve-to-flue mapping](/docs/reference/eve-to-flue-mapping).

@@ -1,18 +1,76 @@
 ---
 title: Migration Tiers
-description: Eve compatibility migration levels
+description: Tier-based classification for migrating Eve projects to flue-eve
 ---
 
 # Migration Tiers
 
-| Tier | Description | Status |
-|------|-------------|--------|
-| 0 | HTTP routes + client SDK + React hook | **Supported** (M0–M4) |
-| 1 | HITL + tool calls + connections | **Supported** (M5) |
-| 2 | Production auth + persistence + Cloudflare | **Supported** (M6) |
-| 3 | Authoring model (Eve file layout) | **Partial** (M7 scaffold) |
-| 4 | Workflows + channels | **Supported** (M8e) |
-| 5 | SvelteKit + Nuxt + Nitro plugins | **Supported** (M8f–M8g) |
+The migration scanner (`npx flue-eve scan`) classifies every file-level Eve
+pattern into one of four tiers. This tells you what can be migrated automatically
+vs what needs manual work vs what is incompatible.
 
-See [full compatibility](/docs/reference/compatibility) for the complete
-surface-by-surface status.
+## Tier breakdown
+
+| Tier | Description | Migration |
+|------|-------------|-----------|
+| **Tier 0** | Browser-only code: `useEveAgent`, `eve/client` imports | Zero-touch — Vite aliases handle it |
+| **Tier 1** | Declarative agent: `agent/instructions.md`, `agent/tools/*.ts`, `eve.config.ts`, simple MCP connections | Auto — scaffold generates Flue modules |
+| **Tier 2** | `defineTool` / `defineMcpClientConnection` with complex logic, `src/agent/` layout instead of root `agent/` | Warning + manual review |
+| **Tier 3** | Incompatible: Workflow SDK (`run`, `step`), platform channels, schedules, subagents, `@eve/platform` | Blocked — report explains alternatives |
+
+## Tier 0 — Zero-touch
+
+These imports are automatically aliased by the Vite plugin:
+
+| Eve import | Resolves to |
+|------------|-------------|
+| `eve/client` | `flue-eve/client` |
+| `eve/react` | `flue-eve/react` |
+
+No code changes needed. Alias is applied when `flueEve()` is loaded in `vite.config.ts`.
+
+## Tier 1 — Auto-scaffold
+
+Patterns that follow the standard Eve declarative agent layout. The scaffold
+generates equivalent Flue modules:
+
+- **`agent/instructions.md`** → inlined into generated Flue agent definition
+- **`agent/tools/*.ts`** → generated Flue tool adapters
+- **`agent/connections/*.ts`** → converted via `@flue-eve/connections`
+- **`eve.config.ts`** → merged into plugin options
+
+Run `npx flue-eve init` to generate everything.
+
+## Tier 2 — Manual review
+
+These patterns need context-specific decisions:
+
+| Pattern | What to do |
+|---------|-----------|
+| `defineTool()` with custom wrappers | Rewrite as Flue tool in `src/tools/` |
+| `defineMcpClientConnection` with inline auth | Extract standalone connection definition |
+| `src/agent/` directory layout | Move `agent/` to project root or adjust layout config |
+
+## Tier 3 — Incompatible
+
+These Eve features have no direct equivalent. Alternatives:
+
+| Feature | Alternative |
+|---------|-------------|
+| Workflow SDK (`run`, `step`) | Use `@flue-eve/workflows` |
+| Platform channels (`slackChannel`, etc.) | Use Flue `@flue/*` channel integrations |
+| Eve schedules | Use your own scheduler |
+| Subagents | Define separate Flue agents |
+| `@eve/platform` | Use `@flue/runtime` directly |
+
+## Running the scanner
+
+```bash
+npx flue-eve scan           # report only
+npx flue-eve scan --strict  # fail CI on Tier 2/3
+npx flue-eve scan --json    # machine-readable output
+```
+
+Most Eve chat agents are **Tier 0/1** — scan first, then `npx flue-eve init` to scaffold.
+
+See [from-eve](/docs/getting-started/from-eve) for the end-to-end migration walkthrough.

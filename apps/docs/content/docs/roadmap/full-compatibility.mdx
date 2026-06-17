@@ -1,6 +1,6 @@
 ---
 title: Full Compatibility
-description: Eve compatibility closure list
+description: Milestone status and remaining work
 ---
 
 # Full Compatibility
@@ -9,22 +9,21 @@ description: Eve compatibility closure list
 
 | Milestone | Status | Key deliverables |
 |-----------|--------|-----------------|
-| M0–M4 | Done | Routes, journal, client, react, HITL |
-| M5 | Done | Connections, OAuth, info routes |
-| M6 | Done | Production auth, persistence, Cloudflare |
-| M7 | Done | Scaffold, Worker CI, smoke gate |
-| M8 | Done | Workflows, channels, SvelteKit, Nuxt, Nitro |
+| M0–M4 | Done | Routes, journal, client, React hook, HITL |
+| M5 | Done | Connections, OAuth, `/info` routes |
+| M6 | Done | Production auth, persistence (SQLite, Redis, KV/DO), Cloudflare Worker |
+| M7 | Done | Scaffold, `eve.config.ts`, instructions input, Worker CI, smoke gate |
+| M8 | Done | In-process admission, multi-agent, workflows, channels, SvelteKit, Nuxt, Nitro |
+| M8f–M8g | Done | `@flue-eve/sveltekit`, `@flue-eve/nuxt`, `@flue-eve/nitro` |
 
 ## Remaining work
 
-| Item | Status |
-|------|--------|
-| Live MCP 401 against real MCP server | Polish |
-| In-process Flue admission on Workers | Experimental |
-| Single public package (`flue-eve`) | Planned |
-| `agent/tools/*.ts` auto-load | Planned |
-| `agent/connections/*.ts` auto-load | Planned |
-| Eve file layout agent discovery | Planned |
+| Item | Status | Notes |
+|------|--------|-------|
+| Live MCP 401 against real MCP server | Polish | Mock e2e works; real MCP pending |
+| In-process admission on Workers | Partial | Service Binding works; in-process stabilization |
+| Eve file layout agent discovery | Partial | Scaffold imports declarative layout; full auto-load not planned |
+| Per-turn `continuationToken` rotation | Not planned (v1) | Stable token per session |
 
-See [PLAN.md on GitHub](https://github.com/doeixd/flue-eve/blob/main/PLAN.md)
-for the authoritative implementation plan.
+See [PLAN.md on GitHub](https://github.com/doeixd/flue-eve/blob/master/PLAN.md)
+for the authoritative implementation plan and per-surface ledger.

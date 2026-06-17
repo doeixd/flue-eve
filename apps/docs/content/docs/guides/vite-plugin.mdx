@@ -1,29 +1,172 @@
 ---
 title: Vite Plugin
-description: Configure the flue-eve Vite plugin
+description: Configure the flue-eve Vite plugin — proxy, scaffold, aliases
 ---
 
 # Vite Plugin
 
+The `flueEve()` Vite plugin is the integration hub for flue-eve. It handles
+dev-time proxying, optional scaffolding, import aliasing, and health checking.
+
+## Basic setup
+
 ```ts
-import { defineConfig } from 'vite';
-import { flueEve } from 'flue-eve/vite';
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { flueEve } from 'flue-eve/vite'
 
 export default defineConfig({
-  plugins: [flueEve({
-    // Optional: Flue agent name (default: 'assistant')
-    agentName: 'assistant',
-    // Optional: scaffold agent files on first run
-    scaffold: true,
-    // Optional: Flue server URL for loopback
-    flueBaseUrl: 'http://127.0.0.1:3583',
-  })],
-});
+  plugins: [flueEve()],
+})
 ```
+
+This enables proxying of `/eve/v1/*` and auto-aliases `eve/client` →
+`flue-eve/client` and `eve/react` → `flue-eve/react`.
 
 ## What the plugin does
 
-- Proxies `/eve/v1/*` to the Flue server in dev
-- Optionally scaffolds `flue-eve-shim.ts` and `src/agents/`
-- Validates Flue project prerequisites
-- Injects virtual module `virtual:flue-eve-config`
+### 1. Dev proxy
+
+Proxies `/eve/v1/*` requests to the running Flue server in dev mode.
+In production, you deploy the compat-server alongside your app — the Vite proxy
+is dev-only.
+
+```text
+Browser (localhost:5173)
+  → GET /eve/v1/health
+  → Vite proxy
+  → Flue dev server (127.0.0.1:3583)
+  → Response back to browser
+```
+
+### 2. Scaffold (optional)
+
+When `scaffold.enabled` is `true`, the plugin generates Flue runtime files on
+`buildStart`:
+
+```ts
+flueEve({
+  scaffold: {
+    enabled: true,        // default: false
+    agent: true,           // generate src/agents/{name}.ts
+    tools: true,           // generate tool adapters from agent/tools/
+    connections: true,     // generate connection adapters
+    sidecar: true,         // generate src/flue-eve-shim.ts
+    appMount: true,        // inject mountEveCompat into src/app.ts
+    forceScaffold: false,  // overwrite existing files
+  },
+})
+```
+
+Generated files are marked with `@flue-eve/generated` and are safe to edit.
+
+### 3. Import aliases
+
+Automatically maps Eve imports to flue-eve equivalents:
+
+```text
+eve/client  →  flue-eve/client
+eve/react   →  flue-eve/react
+```
+
+This means existing `import { Client } from 'eve/client'` and
+`import { useEveAgent } from 'eve/react'` imports work without changes.
+
+Control via `aliasEveImports`:
+
+```ts
+flueEve({
+  aliasEveImports: 'auto',  // default — alias only if flue-eve is installed
+  // aliasEveImports: true,  // always alias
+  // aliasEveImports: false, // never alias
+})
+```
+
+### 4. Virtual module
+
+Provides runtime configuration via `virtual:flue-eve-config`:
+
+```ts
+import { agentName, eveMount } from 'virtual:flue-eve-config'
+```
+
+### 5. Health gate
+
+On startup, the plugin waits for the Flue server to respond to `/eve/v1/health`
+before allowing the Vite dev server to open. This prevents "server not ready"
+errors in the browser.
+
+## Configuration options
+
+### Full option reference
+
+```ts
+flueEve({
+  // === Agent configuration ===
+  agentName: 'assistant',          // name of the Flue agent (default: 'assistant')
+  modelId: 'anthropic/claude-sonnet-4-6',  // LLM model specifier
+  instructions: 'You are a helpful assistant.', // system prompt (optional)
+
+  // === Flue runtime ===
+  flueRoot: process.cwd(),         // Flue project root (default: Vite root)
+  flueBaseUrl: undefined,          // Flue server URL for loopback admission
+  spawnFlueDev: true,              // auto-start flue dev with Vite
+
+  // === Scaffold ===
+  scaffold: {
+    enabled: true,                  // enable code generation
+    agent: true,                    // generate agent file
+    tools: true,                    // generate tool adapters
+    connections: false,             // generate connection adapters
+    sidecar: true,                  // generate Eve compat sidecar
+    appMount: true,                 // inject mountEveCompat into app.ts
+    forceScaffold: false,           // overwrite existing files
+  },
+  forceScaffold: false,            // shorthand for scaffold.forceScaffold
+
+  // === Dev server ===
+  proxyMode: 'eve-routes-only',     // proxy only /eve/v1/* (or 'all')
+  healthTimeout: 30000,             // ms to wait for Flue health check
+  healthInterval: 500,              // ms between health check retries
+
+  // === Aliases ===
+  aliasEveImports: 'auto',          // 'auto' | true | false
+
+  // === Mount ===
+  eveMount: '/eve/v1',              // where the compat routes are mounted
+})
+```
+
+## Proxy behavior
+
+In dev mode, the plugin intercepts matching requests and forwards them to the
+Flue server. Headers that could leak browser context (`cookie`, `authorization`,
+`host`, `origin`, `referer`) are stripped from proxied requests.
+
+For production, you deploy the compat-server directly — the Vite proxy is not
+used. See [deployment](/docs/deployment) for production topology.
+
+## Using eve.config.ts
+
+Instead of inline options, you can place an `eve.config.ts` at the project root:
+
+```ts
+// eve.config.ts
+import { defineEveCompat } from 'flue-eve/vite/config'
+
+export default defineEveCompat({
+  agentName: 'assistant',
+  modelId: 'anthropic/claude-sonnet-4-6',
+  instructions: 'You are a helpful assistant.',
+  scaffold: {
+    enabled: true,
+    tools: true,
+  },
+})
+```
+
+The plugin automatically discovers and merges this file with inline options.
+Inline options take precedence over `eve.config.ts`. CLI flags take precedence
+over both.
+
+See [eve.config.ts guide](/docs/guides/eve-config) for the full file format.

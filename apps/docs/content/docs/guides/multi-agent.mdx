@@ -1,30 +1,132 @@
 ---
 title: Multi-Agent
-description: Set up multiple agents
+description: Define and route between multiple agents in flue-eve
 ---
 
 # Multi-Agent
 
-Multiple agents can be defined using Flue's `createAgent`:
+flue-eve supports multiple agents in a single project. Each agent is a
+separate Flue module with its own model, instructions, and tools.
+
+## Defining multiple agents
 
 ```ts
 // src/agents/researcher.ts
+import { createAgent } from '@flue/runtime'
+
 export default createAgent({
   name: 'researcher',
-  model: 'anthropic/claude-sonnet-4-20250514',
-  instructions: 'You research topics thoroughly.',
-});
-
-// src/agents/writer.ts
-export default createAgent({
-  name: 'writer',
-  model: 'anthropic/claude-sonnet-4-20250514',
-  instructions: 'You write clear, concise content.',
-});
+  model: 'anthropic/claude-sonnet-4-6',
+  instructions: 'You research topics thoroughly and cite sources.',
+  tools: [/* research-specific tools */],
+})
 ```
-
-Configure the agent name in `flueEve()`:
 
 ```ts
-flueEve({ agentName: 'researcher' })
+// src/agents/code-reviewer.ts
+import { createAgent } from '@flue/runtime'
+
+export default createAgent({
+  name: 'code-reviewer',
+  model: 'anthropic/claude-sonnet-4-6',
+  instructions: 'You review code for bugs, performance, and security issues.',
+  tools: [/* code-specific tools */],
+})
 ```
+
+## Routing to an agent
+
+### Default agent
+
+Set `agentName` in the plugin:
+
+```ts
+flueEve({ agentName: 'assistant' })
+```
+
+### Per-request routing
+
+Clients can specify which agent to use per turn:
+
+```ts
+// Start with the researcher
+const session = await client.createSession({
+  message: 'Research quantum computing',
+  agent: 'researcher',
+})
+
+// Follow up with the code-reviewer
+await session.send({
+  message: 'Review this implementation',
+  agent: 'code-reviewer',
+})
+```
+
+The `agent` field on each request routes that turn to the specified agent.
+
+### Per-turn routing with the React hook
+
+```tsx
+const agent = useEveAgent({
+  agent: 'researcher',  // default agent
+  api: '/eve/v1',
+})
+
+// Override agent for a specific message
+agent.send('Review this code', { agent: 'code-reviewer' })
+```
+
+## Agent-specific configuration
+
+Each agent can have its own model, tools, and instructions:
+
+```ts
+// src/agents/fast-responder.ts
+export default createAgent({
+  name: 'fast-responder',
+  model: 'openai/gpt-4o-mini',     // cheaper model for simple tasks
+  instructions: 'You respond quickly and concisely.',
+})
+
+// src/agents/deep-thinker.ts
+export default createAgent({
+  name: 'deep-thinker',
+  model: 'anthropic/claude-sonnet-4-6',  // more capable model
+  instructions: 'You think deeply and provide thorough analysis.',
+  tools: [analysisTool, researchTool],
+})
+```
+
+## Shared vs per-agent tools
+
+Tools can be shared between agents or scoped to specific agents:
+
+```ts
+// Shared tool
+import { searchTool } from '../tools/search'
+
+// Researcher gets search + research tools
+export default createAgent({
+  name: 'researcher',
+  tools: [searchTool, researchDatabaseTool],
+})
+
+// Code reviewer gets search + code tools
+export default createAgent({
+  name: 'code-reviewer',
+  tools: [searchTool, lintTool, testRunnerTool],
+})
+```
+
+## Scaffold behavior
+
+`npx flue-eve init` generates a single agent by default. To add more:
+
+1. Manually create `src/agents/<name>.ts` with `createAgent()`
+2. Or run scaffold with a different `--agent-name` and merge manually
+
+The sidecar routes all requests to the configured default agent, but
+per-request routing works regardless of the default.
+
+See [authoring model](/docs/concepts/authoring-model) for both Eve-style and
+Flue-native authoring approaches.

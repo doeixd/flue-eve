@@ -5,14 +5,16 @@ description: How to contribute to flue-eve
 
 # Contributing
 
-Please read the agent onboarding file at **`AGENTS.md`** and the full
-implementation plan at **`PLAN.md`** before contributing.
+Please read the agent onboarding file at **[AGENTS.md](https://github.com/doeixd/flue-eve/blob/master/AGENTS.md)**
+and the full implementation plan at **[PLAN.md](https://github.com/doeixd/flue-eve/blob/master/PLAN.md)**
+before contributing.
 
 ## Quick start
 
 ```bash
-git clone <repo>
+git clone https://github.com/doeixd/flue-eve.git
 cd flue-eve
+npm install -g vite-plus
 vp install
 vp test
 ```
@@ -25,11 +27,35 @@ vp test
 | `AGENTS.md` | Agent onboarding and project orientation |
 | `DEPLOYMENT.md` | Production deployment guide |
 | `test/ATTRIBUTION.md` | Eve-derived test provenance |
+| `flue-eve/SKILL.md` | AI agent skill for migration workflows |
 | `packages/` | Monorepo packages |
 
 ## Testing
 
 ```bash
-vp test           # full suite
+vp test           # full suite (375+ tests, 67 files)
 vp exec -- vitest run  # specific package
+```
+
+## Building
+
+```bash
+# Build all packages
+pnpm -r run build
+
+# Build docs
+pnpm --filter @flue-eve/docs build
+
+# Dev docs
+pnpm --filter @flue-eve/docs dev
+```
+
+## AI coding agent skill
+
+The repo includes a [skills.sh](https://skills.sh)-compatible skill at
+[`flue-eve/SKILL.md`](https://github.com/doeixd/flue-eve/blob/master/flue-eve/SKILL.md).
+Install it to guide AI coding agents through Eve → flue-eve migrations:
+
+```bash
+npx skills add doeixd/flue-eve
 ```

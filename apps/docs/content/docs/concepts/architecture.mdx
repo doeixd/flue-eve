@@ -1,38 +1,146 @@
 ---
 title: Architecture
-description: How flue-eve layers work together
+description: How flue-eve layers work together — data flow, responsibilities, deployment topologies
 ---
 
 # Architecture
 
+flue-eve has four layers, each with a clear responsibility. Understanding
+how they interact helps debug issues and configure the system correctly.
+
+## Layer diagram
+
 ```text
-Browser / scripts
-  │
-  ├── /eve/v1/*  (Eve HTTP contract, NDJSON)
-  │
-  ├── @flue-eve/compat-server
-  │   ├── Hono routes (health, session, stream)
-  │   ├── Event journal (ownes streamIndex)
-  │   └── mapFlueToEve() (Flue event → Eve event translation)
-  │
-  └── Flue agent instance
-      ├── createAgent (harness, tools, sandbox)
-      └── Durable Streams (Flue output)
+┌──────────────────────────────────────────────────────────────────┐
+│                       Browser / scripts                          │
+│  useEveAgent, eve/client  —  imports aliased to flue-eve/*      │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │  /eve/v1/* (HTTP + NDJSON)
+┌────────────────────────────▼─────────────────────────────────────┐
+│                 @flue-eve/compat-server                          │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌───────────────┐   │
+│  │  Hono    │  │  Event   │  │  Token   │  │  mapFlueToEve │   │
+│  │  routes  │  │  journal │  │  manager │  │  (mapper)     │   │
+│  └──────────┘  └──────────┘  └──────────┘  └───────────────┘   │
+└────────────────────────────┬─────────────────────────────────────┘
+                             │  POST /agents/:name/:id
+┌────────────────────────────▼─────────────────────────────────────┐
+│                     @flue/runtime                                │
+│  createAgent → harness → tools → sandbox → Durable Streams      │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-## Layers
+## Layer responsibilities
 
-| Layer | Package | Responsibility |
-|-------|---------|----------------|
-| **Vite plugin** | `flue-eve/vite` | Dev proxy, scaffold, aliases |
-| **Compat server** | `@flue-eve/compat-server` | HTTP routes, tokens, journal, NDJSON |
-| **Client** | `flue-eve/client` | Eve SDK parity |
-| **React** | `flue-eve/react` | `useEveAgent` hook |
-| **Runtime** | Flue | Agent harness, execution, tools |
+| Layer | Package | What it does | What it does NOT do |
+|-------|---------|-------------|---------------------|
+| **Vite plugin** | `flue-eve/vite` | Dev proxy, scaffold, aliases, health gate | Runtime stream mapping |
+| **Compat server** | `@flue-eve/compat-server` | HTTP routes, event journal, NDJSON, tokens, auth | LLM execution |
+| **Client** | `flue-eve/client` | HTTP client, session management, reconnect | Server-side logic |
+| **React** | `flue-eve/react` | React hook, message reducer, HITL UI | HTTP protocol |
+| **Runtime** | `@flue/runtime` | Agent execution, tools, sandbox, durability | Eve protocol |
 
-## Key principle
+## Data flow: a single turn
 
-The **Vite plugin** handles integration (proxy, codegen, shims).
-The **compat-server** handles runtime translation.
-**Never put stream mapping in the Vite middleware** if it can live in the
-Flue server process.
+```text
+1. Browser sends POST /eve/v1/session { message: "Hello" }
+2. Vite proxy forwards to Flue dev server (dev only)
+3. Hono route handler creates/retrieves Flue agent instance
+4. Admission.submit() sends the message to Flue's agent harness
+5. Flue starts streaming Durable Streams events
+6. mapFlueToEve() translates each Flue event to an Eve event
+7. Each Eve event is appended to the journal with streamIndex
+8. NDJSON encoder writes events to the HTTP response
+9. Browser receives events, reducer updates the UI
+```
+
+## The journal: why it exists
+
+Flue's Durable Streams have **per-prompt stream offsets**. If you reconnect
+after a dropped connection, Flue's offset may not align with what the client
+already consumed.
+
+The **event journal** solves this by being the **sole owner of `streamIndex`**.
+Every translated Eve event gets a monotonic index. When the client reconnects
+with `?startIndex=N`, the journal replays from index N — regardless of Flue's
+internal stream state.
+
+This is the single most important architectural decision in the project.
+
+## Dev topology
+
+```text
+Browser (localhost:5173)
+  → /eve/v1/*  (same-origin, Vite proxy)
+  → 127.0.0.1:3583  (flue dev server)
+  → @flue-eve/compat-server  (mounted in Flue app.ts)
+  → @flue/runtime  (agent execution)
+```
+
+The Vite plugin handles the proxy. No CORS configuration needed.
+
+## Production topology
+
+### Mode A: Same-origin reverse proxy (Node)
+
+```text
+Browser → https://app.example.com
+           /           → static UI (Vite build)
+           /eve/v1/*   → Node server with compat-server
+```
+
+Deploy the Vite build output and the compat-server behind the same origin.
+
+### Mode B: Split-origin (Node + CORS)
+
+```text
+Browser (https://ui.example.com)  → CORS preflight
+  → /eve/v1/*  → https://api.example.com/eve/v1/*
+```
+
+Requires `createEveCorsMiddleware()` and the client configured with
+`baseUrl: 'https://api.example.com/eve/v1'`.
+
+### Mode C: Cloudflare Worker
+
+```text
+Browser → https://eve-worker.example.com
+  → Cloudflare Worker with @flue-eve/compat-server/worker
+  → KV/DO persistence
+  → Service Binding → Flue agent Worker (or mock)
+```
+
+## The sidecar pattern
+
+Projects created with `npx flue-eve init` get a **sidecar file**:
+
+```ts
+// src/flue-eve-shim.ts
+import { eveCompat, resolveAdmissionFromRuntime } from '@flue-eve/compat-server'
+
+export function mountEveCompat(app: Hono): void {
+  app.route('/eve/v1', eveCompat({
+    agentName: 'assistant',
+    admission: resolveAdmissionFromRuntime('assistant', {
+      flueBaseUrl: process.env.FLUE_BASE_URL,
+    }),
+  }))
+}
+```
+
+The sidecar is imported in `src/app.ts` via `injectAppMount()`. This separation
+keeps the shim separable from the Flue app — delete the shim to remove Eve
+compatibility, or edit it to customize admission.
+
+## Key invariants
+
+1. **`streamIndex` is journal-owned** — never proxy Flue offsets directly
+2. **Events are NDJSON** — one JSON object per line, `application/x-ndjson`
+3. **`continuationToken` is stable per session (v1)** — no per-turn rotation
+4. **Plugin handles integration, compat-server handles translation** — never
+   put stream mapping in the Vite middleware
+5. **No Flue internals leak to Eve clients** — no `streamUrl`, `offset`, or
+   `submissionId` in browser-facing APIs
+
+See [PLAN.md](https://github.com/doeixd/flue-eve/blob/master/PLAN.md) for the
+complete list of invariants and edge case handling.

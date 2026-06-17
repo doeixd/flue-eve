@@ -1,17 +1,61 @@
 ---
 title: Getting Started
-description: Choose your path
+description: Choose your path to start building with flue-eve
 ---
 
 # Getting Started
 
-Choose the path that matches your situation:
+flue-eve lets you use Eve's HTTP contract, client SDK, and React hooks on top
+of Flue's open runtime. Whether you're starting fresh, migrating from Eve, or
+just need the client library, pick your path below.
 
-| Path | For |
-|------|-----|
-| [New project](/docs/getting-started/new-project) | Starting from scratch |
-| [From Eve](/docs/getting-started/from-eve) | Migrating an existing Eve app |
-| [Frontend only](/docs/getting-started/frontend-only) | Using the client SDK against a remote server |
-| [React](/docs/getting-started/react) | Using `useEveAgent` in a React app |
-| [Client](/docs/getting-started/client) | Using the `eve/client` SDK |
-| [Cloudflare Worker](/docs/getting-started/cloudflare-worker) | Deploying on Cloudflare Workers |
+## Prerequisites
+
+- **Node.js** 22.19.0 or later (Flue requirement)
+- **pnpm** 9.x (or npm/yarn)
+- A package manager and a terminal
+
+## What you'll build
+
+At the end of each path, you'll have a working project where:
+
+- Your browser UI at `http://localhost:5173` talks to `/eve/v1/*` — no CORS,
+  no external config
+- An agent responds to messages with streaming NDJSON events
+- You can use `useEveAgent` in React or the `Client` SDK directly
+- Mock admission gives you deterministic responses without needing an LLM API key
+
+To test with a real LLM, start `flue dev` and set `FLUE_BASE_URL=http://127.0.0.1:3583`.
+
+## How it works (30-second overview)
+
+```text
+Your browser code
+  → /eve/v1/session, /stream  (Eve HTTP contract)
+  → @flue-eve/compat-server   (translates Eve ↔ Flue)
+  → Flue agent instance        (runs the LLM + tools)
+```
+
+The [architecture](/docs/concepts/architecture) concept page explains each layer
+in detail. The short version: the Vite plugin proxies `/eve/v1/*` to a Flue
+server, and the compat-server translates Eve's NDJSON streaming format into
+Flue's agent protocol and back.
+
+## Choose your path
+
+| Path | For | Time |
+|------|-----|------|
+| [New project](/docs/getting-started/new-project) | Starting from scratch with Vite + React | ~5 min |
+| [From Eve](/docs/getting-started/from-eve) | Migrating an existing Eve project | ~5 min |
+| [Frontend only](/docs/getting-started/frontend-only) | Using the client SDK against a remote server | ~2 min |
+| [React](/docs/getting-started/react) | Using `useEveAgent` in any React app | ~3 min |
+| [Client](/docs/getting-started/client) | Using the `eve/client` SDK programmatically | ~3 min |
+| [Cloudflare Worker](/docs/getting-started/cloudflare-worker) | Deploying on Cloudflare Workers | ~10 min |
+
+## Need help?
+
+- [Troubleshooting](/docs/guides/troubleshooting) — common issues and fixes
+- [Concepts](/docs/concepts/eve-and-flue) — understand how Eve and Flue relate
+- [Migration tiers](/docs/concepts/migration-tiers) — understand what can be auto-migrated
+- [AI-assisted migration](#) — install `npx skills add doeixd/flue-eve` to let
+  your AI coding agent handle the migration

@@ -1,16 +1,42 @@
 ---
 title: Authoring Instructions
-description: Write agent instructions
+description: Write agent instructions (system prompt)
 ---
 
 # Authoring Instructions
 
-Agent instructions are set via `createAgent` in Flue:
+The system prompt defines your agent's personality, behavior, and domain
+knowledge.
+
+## Flue-native
+
+Set instructions via `createAgent`:
 
 ```ts
-createAgent({
-  instructions: 'You are a helpful assistant.',
-});
+import { createAgent } from '@flue/runtime'
+
+export default createAgent({
+  instructions: 'You are a helpful order support agent. Always cite order numbers.',
+})
 ```
 
-Eve-style `agent/instructions.md` file support is planned.
+## Eve-style (declarative)
+
+Create `agent/instructions.md`:
+
+```markdown
+You are a helpful order support agent. Always cite order numbers.
+```
+
+Run `npx flue-eve init` to inline these instructions into the generated Flue
+agent definition.
+
+## Best practices
+
+- Be specific about the agent's role and domain
+- List what the agent should **do** and should **not** do
+- Mention available tools and when to use them
+- Keep it under 2,000 characters for optimal response quality
+
+See [authoring model](/docs/concepts/authoring-model) for how the two authoring
+styles relate.

@@ -1,15 +1,57 @@
 ---
 title: Migration Support
-description: Tooling for migrating from Eve
+description: Automated migration tooling from Eve to flue-eve
 ---
 
 # Migration Support
 
-Migration tooling is planned to help users move from an existing Eve
-project to flue-eve:
+Migration from Eve is automated through two CLI tools:
 
-- Import alias scanner (detects `eve/*` imports and suggests replacements)
-- Config converter (Eve config → flue-eve config)
-- Agent file migrator (Eve file layout → Flue `createAgent` calls)
+## Scanner
 
-**Status:** Planned. Track on the [roadmap](/docs/roadmap/full-compatibility).
+```bash
+npx flue-eve scan
+```
+
+Analyzes the project for Eve patterns and classifies them into four tiers:
+
+| Tier | Description | Migration |
+|------|-------------|-----------|
+| 0 | `useEveAgent`, `eve/client` browser imports | Zero-touch |
+| 1 | `instructions.md`, `tools/*.ts`, `eve.config.ts` | Auto-scaffold |
+| 2 | Complex tool patterns, non-standard layout | Manual review |
+| 3 | Workflow SDK, channels, schedules | Blocked |
+
+Use `--strict` to fail CI on Tier 2/3 findings:
+
+```bash
+npx flue-eve scan --strict
+```
+
+## Initializer
+
+```bash
+npx flue-eve init
+```
+
+Creates or updates:
+- Flue agent definition from `agent/instructions.md`
+- Tool adapters from `agent/tools/*.ts`
+- Connection adapters from `agent/connections/*.ts`
+- Eve compat sidecar (`src/flue-eve-shim.ts`)
+- Auto-injects `mountEveCompat(app)` into `src/app.ts`
+
+**Idempotent** — safe to re-run. Existing files are not overwritten unless `--force` is passed.
+
+## AI-assisted migration
+
+A [skills.sh](https://skills.sh)-compatible migration skill is bundled in the
+repo. Install it and ask your AI coding agent to handle the full migration:
+
+```bash
+npx skills add doeixd/flue-eve
+```
+
+See [migrate an existing Eve agent](/docs/guides/migrate-existing-eve-agent) for
+the step-by-step walkthrough and [migration tiers](/docs/concepts/migration-tiers)
+for the tier reference.

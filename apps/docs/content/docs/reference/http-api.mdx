@@ -1,51 +1,214 @@
 ---
 title: HTTP API Reference
-description: Eve HTTP route reference
+description: Complete Eve HTTP route reference — all routes, request/response shapes, headers
 ---
 
-# HTTP API
+# HTTP API Reference
 
-## Health
+All routes are mounted under the configured `eveMount` (default: `/eve/v1`).
 
-```http
-GET /eve/v1/health
+## GET /eve/v1/health
+
+Health check. Returns server status.
+
+**Response** `200 OK`
+
+```json
+{
+  "ok": true,
+  "status": "ready",
+  "workflowId": "wf_compat"
+}
 ```
 
-Response: `{ ok: true, status: "ready" }`
+## GET /eve/v1/info
 
-## Info
+Server and agent metadata.
 
-```http
-GET /eve/v1/info
+**Response** `200 OK`
+
+```json
+{
+  "agent": {
+    "name": "assistant",
+    "model": "anthropic/claude-sonnet-4-6"
+  },
+  "tools": [
+    {
+      "name": "lookup_order",
+      "description": "Look up an order by ID",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "orderId": { "type": "string" }
+        },
+        "required": ["orderId"]
+      }
+    }
+  ],
+  "connections": []
+}
 ```
 
-Response: Agent and server metadata.
+When connections are configured, `tools` includes `connection__*` entries:
 
-## Start session
-
-```http
-POST /eve/v1/session
-Content-Type: application/json
-
-{ "message": "Hello" }
+```json
+{
+  "tools": [
+    {
+      "name": "connection__linear_search",
+      "description": "Search Linear issues",
+      "parameters": { /* ... */ }
+    }
+  ]
+}
 ```
 
-Response: `202 Accepted` with `sessionId` and `continuationToken`.
+## POST /eve/v1/session
 
-## Send message
+Create a new session.
 
-```http
-POST /eve/v1/session/:sessionId
-Content-Type: application/json
+**Request body**
+
+```json
+{
+  "message": "Hello, world!",
+  "agent": "assistant",
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "answer": { "type": "string" }
+    }
+  },
+  "clientContext": {
+    "userId": "user-123",
+    "tier": "pro"
+  }
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `message` | `string` | Yes | The user's message |
+| `agent` | `string` | No | Agent name (uses default if omitted) |
+| `outputSchema` | `object` | No | JSON Schema for structured output |
+| `clientContext` | `object` | No | Arbitrary context for the agent |
+
+**Response** `202 Accepted`
+
+```json
+{
+  "sessionId": "ses_abc123",
+  "continuationToken": "tok_xyz789"
+}
+```
+
+Headers:
+
+```
+x-eve-session-id: ses_abc123
+```
+
+The session starts streaming immediately. Connect to `GET /session/:id/stream`
+to receive events.
+
+## POST /eve/v1/session/:sessionId
+
+Send a follow-up message to an existing session (multi-turn conversation).
+
+**Headers**
+
+```
 Authorization: Bearer <continuationToken>
-
-{ "message": "Tell me more" }
 ```
 
-## Stream
+**Request body**
 
-```http
-GET /eve/v1/session/:sessionId/stream?startIndex=0
+```json
+{
+  "message": "Tell me more",
+  "agent": "assistant",
+  "continuationToken": "tok_xyz789",
+  "outputSchema": { /* ... */ },
+  "inputResponses": { "approved": true }
+}
 ```
 
-Response: NDJSON stream (`application/x-ndjson; charset=utf-8`).
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `message` | `string` | No | The user's message (omitted for HITL resume) |
+| `agent` | `string` | No | Agent name (optional per-turn routing) |
+| `continuationToken` | `string` | Yes | Token from the session response |
+| `outputSchema` | `object` | No | JSON Schema for structured output |
+| `inputResponses` | `object` | No | HITL input responses (resume from park) |
+
+**Response** `200 OK`
+
+```json
+{
+  "sessionId": "ses_abc123",
+  "continuationToken": "tok_xyz789"
+}
+```
+
+**Error responses**
+
+| Code | Meaning |
+|------|---------|
+| 409 | Stale `continuationToken` — turn is still active |
+| 410 | Terminal session — cannot accept more messages |
+| 404 | Session not found |
+
+## GET /eve/v1/session/:sessionId/stream
+
+Stream events for a session. Returns NDJSON (`application/x-ndjson; charset=utf-8`).
+
+**Query parameters**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `startIndex` | `number` | Replay from this journal index (optional) |
+
+**Response headers**
+
+```
+content-type: application/x-ndjson; charset=utf-8
+x-eve-stream-format: ndjson
+x-eve-stream-version: 16
+cache-control: no-cache
+connection: keep-alive
+```
+
+**Response body** (NDJSON, one JSON event per line)
+
+```jsonl
+{"type":"session.started","data":{}}
+{"type":"agent.start","streamIndex":0}
+{"type":"agent.content.delta","data":{"text":"Hello"},"streamIndex":1}
+{"type":"agent.content.delta","data":{"text":"!"},"streamIndex":2}
+{"type":"message.appended","data":{"id":"msg_1","role":"assistant","content":"Hello!"},"streamIndex":3}
+{"type":"agent.complete","streamIndex":4}
+{"type":"session.waiting","streamIndex":5}
+```
+
+**Error responses**
+
+| Code | Meaning |
+|------|---------|
+| 400 | Invalid `startIndex` (negative or NaN) |
+| 404 | Session not found |
+
+## Error response format
+
+All errors follow the same shape:
+
+```json
+{
+  "error": {
+    "code": "session_not_found",
+    "message": "Session ses_abc123 not found"
+  }
+}
+```
+
+See [error reference](/docs/reference/errors) for the complete error catalog.

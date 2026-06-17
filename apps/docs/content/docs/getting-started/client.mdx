@@ -1,27 +1,227 @@
 ---
 title: Client
-description: Use the Eve-compatible client SDK
+description: Use the Eve-compatible client SDK for programmatic access
 ---
 
 # Client
 
-```ts
-import { Client } from 'flue-eve/client';
+The `flue-eve/client` package provides a drop-in replacement for `eve/client`.
+Use it for programmatic access — CLI tools, scripts, tests, or non-React apps.
 
-const client = new Client({ baseUrl: '/eve/v1' });
+## Quick start
+
+```ts
+import { Client } from 'flue-eve/client'
+
+const client = new Client({ baseUrl: '/eve/v1' })
 
 // Start a session
-const session = client.createSession({ message: 'Hello' });
+const session = await client.createSession({ message: 'Hello' })
 
-// Read the result
-const result = await session.result();
-console.log(result.text);
+// Wait for the full result
+const result = await session.result()
+console.log(result.text) // "Hello! How can I help you today?"
 
-// Or use streaming
+// Or stream events
 for await (const event of session.stream()) {
-  console.log(event.type, event);
+  console.log(event.type, event)
 }
 ```
 
-Supports reconnect via `startIndex`, resuming with `continuationToken`,
-and multi-turn conversations.
+## Creating a client
+
+```ts
+const client = new Client({
+  baseUrl: '/eve/v1',           // required — where the Eve routes are mounted
+  auth: {                       // optional — production auth
+    type: 'bearer',
+    token: 'your-token',
+  },
+  headers: {                    // optional — extra headers per request
+    'X-Custom': 'value',
+  },
+})
+```
+
+## Starting a session
+
+```ts
+const session = await client.createSession({
+  message: 'Hello',             // the user's first message
+  agent: 'assistant',           // optional — which agent to use
+  outputSchema: {               // optional — request structured output
+    type: 'object',
+    properties: {
+      answer: { type: 'string' },
+    },
+  },
+  clientContext: {              // optional — context for the agent
+    userId: 'user-123',
+    tier: 'pro',
+  },
+})
+```
+
+The response includes `sessionId`, `continuationToken`, and starts streaming.
+
+## Multi-turn conversations
+
+Use `send()` on the session to continue the conversation:
+
+```ts
+// First turn
+const session = await client.createSession({ message: 'What is 2+2?' })
+
+// Second turn
+await session.send({ message: 'Now multiply by 3' })
+
+// Third turn
+await session.send({ message: 'Add 10 to that' })
+```
+
+Each `send()` call reuses the session's `sessionId` and `continuationToken`.
+
+## Reading results
+
+Two ways to consume the stream:
+
+### `result()` — wait for completion
+
+```ts
+const result = await session.result()
+console.log(result.text)          // full text output
+console.log(result.toolCalls)     // all tool calls made
+console.log(result.completed)     // true when done
+```
+
+When `outputSchema` is used, `result.completed` contains the structured data:
+
+```ts
+const session = await client.createSession({
+  message: 'List 3 colors',
+  outputSchema: {
+    type: 'object',
+    properties: {
+      colors: { type: 'array', items: { type: 'string' } },
+    },
+  },
+})
+const result = await session.result()
+console.log(result.completed.colors) // ['red', 'blue', 'green']
+```
+
+### `stream()` — process events as they arrive
+
+```ts
+for await (const event of session.stream()) {
+  switch (event.type) {
+    case 'agent.content.delta':
+      process.stdout.write(event.data.text)
+      break
+    case 'agent.tool_call':
+      console.log('Tool call:', event.data.tool.name)
+      break
+    case 'agent.tool_result':
+      console.log('Result:', event.data.result)
+      break
+    case 'session.waiting':
+      console.log('Turn complete')
+      break
+  }
+}
+```
+
+## Reconnecting after disconnect
+
+If the connection drops, resume from where you left off:
+
+```ts
+// Save the last streamIndex you received
+let lastIndex = 0
+
+for await (const event of session.stream()) {
+  lastIndex = event.streamIndex
+  // ... process event
+}
+
+// After reconnect:
+const resumed = client.reconnect(sessionId, lastIndex + 1)
+for await (const event of resumed.stream()) {
+  console.log(event)  // picks up right where you left off
+}
+```
+
+The `streamIndex` is owned by the server-side journal, ensuring consistent replay.
+
+## Session lifecycle
+
+```ts
+// Check session state
+console.log(session.state)   // 'waiting' | 'active' | 'complete' | 'error'
+
+// Get the session ID and token
+console.log(session.sessionId)           // 'ses_abc123'
+console.log(session.continuationToken)   // 'tok_xyz789'
+
+// Session is automatically cleaned up when complete
+```
+
+## Authentication
+
+For production, provide a bearer token:
+
+```ts
+const client = new Client({
+  baseUrl: 'https://api.example.com/eve/v1',
+  auth: { type: 'bearer', token: process.env.EVE_AUTH_TOKEN },
+})
+```
+
+The token is sent as `Authorization: Bearer <token>` on every request.
+
+## Error handling
+
+```ts
+try {
+  const session = await client.createSession({ message: 'Hello' })
+  const result = await session.result()
+} catch (err) {
+  if (err.status === 401) {
+    console.error('Authentication required')
+  } else if (err.status === 409) {
+    console.error('Stale token — create a new session')
+  } else if (err.status === 410) {
+    console.error('Session has ended')
+  } else {
+    console.error('Client error:', err.message)
+  }
+}
+```
+
+## Saving and loading session state
+
+Persist session cursors to resume after page reloads:
+
+```ts
+import { saveSessionState, loadSessionState } from 'flue-eve/client'
+
+// Save after each turn
+const state = {
+  sessionId: session.sessionId,
+  continuationToken: session.continuationToken,
+  streamIndex: lastEventIndex,
+  agent: 'assistant',
+}
+saveSessionState(localStorage, state)
+
+// Restore on page load
+const saved = loadSessionState(localStorage)
+if (saved) {
+  const client = new Client({ baseUrl: '/eve/v1' })
+  const resumed = client.reconnect(saved.sessionId, saved.streamIndex)
+  // ... continue streaming
+}
+```
+
+See [React guide](/docs/react) for the React hook wrapper that handles this
+automatically, and the [client guide](/docs/guides/client) for advanced patterns.

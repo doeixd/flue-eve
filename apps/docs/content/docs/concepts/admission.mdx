@@ -5,18 +5,19 @@ description: How user turns are submitted to Flue
 
 # Admission
 
-**Admission** is how the compat-server submits a user turn to Flue and
-consumes the resulting stream.
+**Admission** is how the compat-server submits a user turn to Flue and consumes
+the resulting stream.
 
 ## Strategies
 
 | Strategy | When used | How it works |
 |----------|-----------|--------------|
 | **Mock** | Default (no Flue server) | Deterministic fake stream, no LLM calls |
-| **Loopback** | `FLUE_BASE_URL` is set | HTTP POST to a running `flue dev` server |
-| **In-process** | Experimental | Direct `createAgent` call in the same process |
+| **Loopback** | `FLUE_BASE_URL` is set | HTTP POST to a running `flue dev` server; 2 retries with backoff |
+| **In-process** | Experimental / co-located | Direct `createAgent` call in the same Node process |
+| **Service Binding** | Cloudflare Workers with `FLUE_AGENT` env | Worker-to-worker binding, no HTTP |
 
-## Resolution
+## Resolution (Node.js)
 
 ```ts
 import { resolveAdmission } from '@flue-eve/compat-server';
@@ -27,5 +28,57 @@ const admission = resolveAdmission({
 });
 ```
 
-When `FLUE_BASE_URL` is not set, mock admission is used — useful for
-development and testing without a running Flue server.
+Preference order:
+1. **In-process** — if `@flue/runtime` is available in the same process
+2. **Loopback** — if `FLUE_BASE_URL` is set
+3. **Mock** — fallback (dev/testing)
+
+## Resolution (Cloudflare Workers)
+
+```ts
+import { createEveWorkerApp } from '@flue-eve/compat-server/worker';
+
+export default createEveWorkerApp({
+  agentName: 'assistant',
+  // Uses Service Binding when FLUE_AGENT is set, else mock
+});
+```
+
+## The generated sidecar
+
+Projects scaffolded with `npx flue-eve init` get a sidecar that handles
+resolution automatically:
+
+```ts
+// src/flue-eve-shim.ts (generated)
+import { resolveAdmissionFromRuntime } from '@flue-eve/compat-server';
+
+function resolveEveAdmission() {
+  return resolveAdmissionFromRuntime('assistant', {
+    flueBaseUrl: process.env.FLUE_BASE_URL,
+  });
+}
+```
+
+- **Dev without Flue:** omit `FLUE_BASE_URL` → mock responses
+- **Dev with Flue:** set `FLUE_BASE_URL=http://127.0.0.1:3583` → loopback
+- **Production (co-located):** in-process admission used automatically
+
+## Admission flow
+
+```text
+Client POST /eve/v1/session
+  → compat-server creates Flue agent instance
+  → admission.submit() sends user message to Flue
+  → Flue stream events flow through mapFlueToEve()
+  → journal appends translated Eve events
+  → NDJSON stream to client
+```
+
+See [architecture](/docs/concepts/architecture) for the full pipeline.
+
+## Loopback retry
+
+When using loopback admission, failed POST requests to Flue are retried up to
+2 times with exponential backoff. This handles transient connection issues
+during cold starts.

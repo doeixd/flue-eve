@@ -1,20 +1,125 @@
 ---
 title: Authoring Connections
-description: Configure third-party connections
+description: Write connection definitions for MCP tools and OAuth integrations
 ---
 
 # Authoring Connections
 
-Connections bridge MCP tools to the agent:
+Connections give your agent access to external services through MCP tools.
+
+## Flue-native connections
 
 ```ts
-import { defineFlueConnection } from '@flue-eve/connections';
+// src/connections/slack.ts
+import { defineFlueConnection } from '@flue-eve/connections'
 
 export const slack = defineFlueConnection({
   name: 'slack',
-  auth: { type: 'oauth2' },
-  tools: ['post_message', 'list_channels'],
-});
+  auth: {
+    type: 'oauth2',
+    authorizationUrl: 'https://slack.com/oauth/v2/authorize',
+    tokenUrl: 'https://slack.com/api/oauth.v2.access',
+    clientId: process.env.SLACK_CLIENT_ID,
+    clientSecret: process.env.SLACK_CLIENT_SECRET,
+  },
+  tools: ['post_message', 'list_channels', 'search_messages'],
+})
 ```
 
-See [connections guide](/docs/guides/connections) for details.
+Register connections in the registry:
+
+```ts
+// src/connections/index.ts
+import { createConnectionRegistry } from '@flue-eve/connections'
+import { slack } from './slack'
+import { github } from './github'
+
+export const connectionRegistry = createConnectionRegistry({
+  connections: [slack, github],
+})
+```
+
+## Eve-style (declarative)
+
+Place connection files in `agent/connections/`:
+
+```ts
+// agent/connections/linear.ts
+export default {
+  name: "linear",
+  type: "mcp",
+  auth: { type: "oauth" },
+  tools: ["search_issues", "create_issue", "list_teams"],
+}
+```
+
+Run `npx flue-eve init --connections` to generate Flue connection adapters.
+
+## Auth types
+
+| Type | Description | Required fields |
+|------|-------------|----------------|
+| `oauth` / `oauth2` | OAuth 2.0 authorization code flow | `authorizationUrl`, `tokenUrl`, `clientId`, `clientSecret` |
+| `apiKey` | API key in header or query | `apiKey`, `headerName` or `queryParam` |
+| `bearer` | Bearer token | `token` |
+
+## Tool configuration
+
+The `tools` array lists the MCP tools to expose. These are tool names from
+the MCP server, not self-defined:
+
+```ts
+defineFlueConnection({
+  name: 'github',
+  tools: [
+    'search_repositories',   // matches the MCP server's tool name
+    'get_file_contents',
+    'list_issues',
+  ],
+})
+```
+
+Tools appear in the stream as `connection__github_search_repositories`,
+`connection__github_get_file_contents`, etc.
+
+## @vercel/connect bridge
+
+For connections already defined in `@vercel/connect`, use the bridge:
+
+```ts
+import { defineFlueConnectionWithConnect } from '@flue-eve/connections/connect'
+
+export const github = defineFlueConnectionWithConnect({
+  name: 'github',
+  // Auth is managed by @vercel/connect
+})
+```
+
+```bash
+npm install @vercel/connect
+```
+
+The bridge handles OAuth token exchange, refresh, and storage automatically.
+
+## Connection lifecycle
+
+```text
+1. Agent starts → connectionRegistry loaded
+2. Agent attempts tool call → OAuth required → authorization.required
+3. User authorizes → GET /eve/v1/oauth/callback → token stored
+4. authorization.granted → stream resumes
+5. Agent retries tool call → token attached → tool executes
+```
+
+## Troubleshooting
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| Tools not appearing in `/info` | Connection not registered | Export and add to `connectionRegistry` |
+| 401 on tool call | OAuth token expired | Re-authorize — callback triggers token refresh |
+| `authorization.required` never resolves | Callback URL not reachable | Ensure `/eve/v1/oauth/callback` is publicly accessible |
+| `mcp__*` tools shown instead of `connection__*` | Mapper not configured | Verify compat-server has `connections` option set |
+
+See [connections and OAuth](/docs/concepts/connections-oauth) for the
+authorization lifecycle and [connections guide](/docs/guides/connections) for
+integration patterns.

@@ -1,29 +1,226 @@
 ---
 title: Client Guide
-description: Using the Eve-compatible client SDK
+description: Comprehensive guide to the Eve-compatible client SDK
 ---
 
 # Client Guide
 
+The `flue-eve/client` package provides a full Eve SDK replacement. This guide
+covers advanced patterns beyond the [getting started](/docs/getting-started/client)
+basics.
+
+## Client configuration
+
 ```ts
-import { Client } from 'flue-eve/client';
+import { Client } from 'flue-eve/client'
 
-const client = new Client({ baseUrl: '/eve/v1' });
+const client = new Client({
+  baseUrl: '/eve/v1',       // API mount point
+  auth: {                    // production auth
+    type: 'bearer',
+    token: 'your-token',
+  },
+  headers: {                 // extra headers
+    'X-Client-Version': '1.0.0',
+  },
+  fetch: customFetch,        // custom fetch implementation (e.g., for Node 18-)
+})
+```
 
-// Start a session
-const session = client.createSession({ message: 'Hello' });
+## Session lifecycle
 
-// Get the result (waits for completion)
-const result = await session.result();
+### Creating a session
 
-// Or iterate over the stream
+```ts
+const session = await client.createSession({
+  message: 'Hello',
+  agent: 'assistant',           // optional — agent name
+  outputSchema: {               // optional — Zod-like schema
+    type: 'object',
+    properties: {
+      answer: { type: 'string' },
+      confidence: { type: 'number' },
+    },
+    required: ['answer'],
+  },
+  clientContext: {              // optional — per-session context
+    userId: 'user-123',
+    locale: 'en-US',
+  },
+})
+```
+
+### Continuing a session
+
+```ts
+await session.send({
+  message: 'Tell me more',
+  // outputSchema and clientContext are optional on follow-up turns
+})
+```
+
+### Streaming events
+
+```ts
 for await (const event of session.stream()) {
-  console.log(event.type, event.data);
-}
-
-// Reconnect from a specific index
-const resumed = await client.reconnect(sessionId, 42);
-for await (const event of resumed.stream()) {
-  console.log(event);
+  switch (event.type) {
+    case 'agent.start':
+      console.log('Turn started')
+      break
+    case 'agent.content.delta':
+      process.stdout.write(event.data.text) // streaming text
+      break
+    case 'agent.tool_call':
+      console.log(`Calling ${event.data.tool.name}...`)
+      break
+    case 'agent.tool_result':
+      console.log(`Result:`, event.data.result)
+      break
+    case 'agent.complete':
+      console.log('Turn complete')
+      break
+    case 'result.completed':
+      console.log('Structured result:', event.data.result)
+      break
+    case 'session.waiting':
+      console.log('Ready for next turn')
+      break
+    case 'session.failed':
+      console.error('Session failed:', event.data.error)
+      break
+  }
 }
 ```
+
+### Reconnecting
+
+Save your position and resume after a disconnect:
+
+```ts
+let lastIndex = 0
+
+for await (const event of session.stream()) {
+  lastIndex = event.streamIndex  // server-assigned index
+  // process event...
+}
+
+// After reconnect:
+const resumed = client.reconnect(session.sessionId, lastIndex + 1)
+for await (const event of resumed.stream()) {
+  console.log(event)  // continues from where you left off
+}
+```
+
+### Result extraction
+
+```ts
+const result = await session.result()
+
+console.log(result.text)          // full text output
+console.log(result.toolCalls)     // all tool invocations
+console.log(result.completed)     // structured output (when outputSchema used)
+```
+
+## Multi-agent sessions
+
+Specify the agent per turn:
+
+```ts
+// Start with assistant
+const session = await client.createSession({
+  message: 'Help me with this',
+  agent: 'assistant',
+})
+
+// Follow up with a different agent
+await session.send({
+  message: 'Now analyze this code',
+  agent: 'code-reviewer',
+})
+```
+
+The session ID is shared, but each turn routes to the specified agent.
+
+## Authentication
+
+### Bearer token
+
+```ts
+const client = new Client({
+  baseUrl: '/eve/v1',
+  auth: {
+    type: 'bearer',
+    token: process.env.EVE_AUTH_TOKEN,
+  },
+})
+```
+
+The token is sent as `Authorization: Bearer <token>` on every HTTP request.
+
+### No auth (development)
+
+```ts
+const client = new Client({
+  baseUrl: '/eve/v1',
+  // no auth — server must be configured with auth: 'none'
+})
+```
+
+## Error handling
+
+```ts
+try {
+  const session = await client.createSession({ message: 'Hello' })
+} catch (err) {
+  if (err.status === 401) {
+    console.error('Invalid or missing authentication')
+  } else if (err.status === 409) {
+    console.error('Session conflict — try creating a new session')
+  } else if (err.status === 410) {
+    console.error('Session has ended — create a new session')
+  } else if (err.status === 500) {
+    console.error('Server error — check server logs')
+  } else if (err.name === 'AbortError') {
+    console.error('Request was aborted')
+  } else {
+    console.error('Unexpected error:', err)
+  }
+}
+```
+
+## Session persistence
+
+Save and restore session state for page reloads:
+
+```ts
+import { saveSessionState, loadSessionState } from 'flue-eve/client'
+
+// Save after a turn
+saveSessionState(localStorage, {
+  sessionId: session.sessionId,
+  continuationToken: session.continuationToken,
+  streamIndex: lastEventIndex,
+  agent: 'assistant',
+})
+
+// Restore on next page load
+const saved = loadSessionState(localStorage)
+if (saved) {
+  // You can pass this to useEveAgent or reconnect manually
+}
+```
+
+## TypeScript types
+
+```ts
+import type {
+  EveEvent,
+  EveSessionResponse,
+  EveStreamEvent,
+  ClientOptions,
+  SessionOptions,
+  SendOptions,
+} from 'flue-eve/client'
+```
+
+See [event types reference](/docs/reference/events) for the full event catalog.

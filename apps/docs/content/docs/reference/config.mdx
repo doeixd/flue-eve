@@ -1,35 +1,214 @@
 ---
 title: Configuration Reference
-description: All configuration options
+description: Complete configuration options for Vite plugin, compat-server, and env vars
 ---
 
-# Configuration
+# Configuration Reference
 
-## Vite plugin config
+Configuration comes from three sources, merged in priority order:
+1. CLI flags (highest)
+2. `eve.config.ts`
+3. `flueEve()` plugin options (lowest)
+
+## Vite plugin options
 
 ```ts
 flueEve({
-  agentName: string;     // default: 'assistant'
-  scaffold: boolean;     // default: false
-  spawnFlueDev: boolean; // default: true
-  flueBaseUrl: string;   // optional
-  proxyMode: 'eve-routes-only' | 'all';
+  // === Agent ===
+  agentName: 'assistant',
+  modelId: 'anthropic/claude-sonnet-4-6',
+  instructions: 'You are a helpful assistant.',
+
+  // === Paths ===
+  eveMount: '/eve/v1',
+  flueRoot: process.cwd(),
+
+  // === Dev server ===
+  flueBaseUrl: undefined,
+  spawnFlueDev: true,
+  proxyMode: 'eve-routes-only',
+  healthTimeout: 30000,
+  healthInterval: 500,
+
+  // === Scaffold ===
+  scaffold: {
+    enabled: true,
+    agent: true,
+    tools: true,
+    connections: false,
+    sidecar: true,
+    appMount: true,
+    forceScaffold: false,
+  },
+  forceScaffold: false,
+
+  // === Aliases ===
+  aliasEveImports: 'auto',
 })
 ```
 
-## Server config
+### Agent options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `agentName` | `string` | `"assistant"` | Flue agent name |
+| `modelId` | `string` | `"anthropic/claude-sonnet-4-6"` | LLM model specifier |
+| `instructions` | `string` | `undefined` | System prompt (overrides `agent/instructions.md`) |
+
+### Path options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `eveMount` | `string` | `"/eve/v1"` | Where Eve routes are mounted |
+| `flueRoot` | `string` | Vite project root | Flue project root directory |
+
+### Dev server options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `flueBaseUrl` | `string` | `undefined` | URL of running Flue server for loopback admission |
+| `spawnFlueDev` | `boolean` | `true` | Auto-start `flue dev` with Vite |
+| `proxyMode` | `"eve-routes-only" \| "all"` | `"eve-routes-only"` | Which requests to proxy |
+| `healthTimeout` | `number` | `30000` | Max ms to wait for Flue health check |
+| `healthInterval` | `number` | `500` | Ms between health check retries |
+
+### Scaffold options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `scaffold.enabled` | `boolean` | `false` | Enable code generation |
+| `scaffold.agent` | `boolean` | `true` | Generate agent definition |
+| `scaffold.tools` | `boolean` | `true` | Generate tool adapters |
+| `scaffold.connections` | `boolean` | `false` | Generate connection adapters |
+| `scaffold.sidecar` | `boolean` | `true` | Generate Eve compat sidecar |
+| `scaffold.appMount` | `boolean` | `true` | Inject `mountEveCompat` into app.ts |
+| `scaffold.forceScaffold` | `boolean` | `false` | Overwrite existing files |
+| `forceScaffold` | `boolean` | `false` | Shorthand for `scaffold.forceScaffold` |
+
+### Alias options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `aliasEveImports` | `"auto" \| boolean` | `"auto"` | Alias `eve/*` to `flue-eve/*` |
+
+## eva.config.ts
 
 ```ts
-eveCompat({
-  agentName: string;
-  admission: AdmissionFunction;
-  auth?: 'none' | 'token';
-  persistence?: PersistenceConfig;
-  mount?: string;         // default: '/eve/v1'
-  cors?: CorsConfig;
+// eve.config.ts
+import { defineEveCompat } from 'flue-eve/vite/config'
+
+export default defineEveCompat({
+  agentName: 'assistant',
+  modelId: 'anthropic/claude-sonnet-4-6',
+  instructions: 'You are a helpful assistant.',
+  eveMount: '/eve/v1',
+  scaffold: {
+    enabled: true,
+    agent: true,
+    tools: true,
+  },
 })
+```
+
+## Compat-server options
+
+### evaCompat()
+
+```ts
+import { eveCompat } from '@flue-eve/compat-server'
+
+app.route('/eve/v1', eveCompat({
+  agentName: 'assistant',
+  admission: myAdmission,
+  auth: 'none',
+  persistence: { type: 'memory' },
+  maxEvents: 10000,
+  cors: {
+    origin: 'https://my-app.com',
+  },
+}))
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `agentName` | `string` | Required | Flue agent name |
+| `admission` | `AdmissionFn` | Required | How to submit turns to Flue |
+| `auth` | `"none" \| "token" \| "bearer"` | `"token"` | Authentication mode |
+| `persistence` | `PersistenceConfig` | `{ type: "memory" }` | Journal persistence backend |
+| `maxEvents` | `number` | `10000` | Max events in journal per session |
+| `cors` | `CorsConfig` | `undefined` | CORS middleware config |
+| `connections` | `ConnectionRegistry` | `undefined` | Connection registry for MCP tools |
+
+### Persistence config
+
+```ts
+// Memory (default)
+persistence: { type: 'memory' }
+
+// SQLite
+persistence: {
+  type: 'sqlite',
+  dbPath: './eve-journal.db',
+}
+
+// File
+persistence: {
+  type: 'file',
+  dir: './eve-journals',
+}
+
+// Redis
+persistence: {
+  type: 'redis',
+  redis: redisClient,
+  keyPrefix: 'eve:journal:',
+}
+
+// Cloudflare KV
+persistence: {
+  type: 'kv',
+  kvNamespace: MY_KV,
+}
+
+// Cloudflare Durable Object
+persistence: {
+  type: 'durable-object',
+  doNamespace: EVE_JOURNAL,
+}
+```
+
+### Auth config
+
+| Mode | Description |
+|------|-------------|
+| `"none"` | No authentication — dev only |
+| `"token"` | Simple bearer token via `EVE_AUTH_BEARER` env |
+| `"bearer"` | Full bearer auth with custom validation |
+
+In production, auth defaults to `"token"` and fails closed (401)
+unless `auth: "none"` is explicitly set.
+
+### CORS config
+
+```ts
+cors: {
+  origin: 'https://my-app.com',     // allowed origin
+  methods: ['GET', 'POST'],         // allowed methods
+  headers: ['Content-Type'],        // allowed headers
+  credentials: true,                 // allow cookies
+}
 ```
 
 ## Environment variables
 
-See [env vars](/docs/deployment/env-vars).
+| Variable | Purpose |
+|----------|---------|
+| `FLUE_BASE_URL` | Flue server URL for loopback admission |
+| `FLUE_AGENT_URL` | Custom Flue agent URL (overrides auto-resolution) |
+| `FLUE_AGENT` | Service Binding name for Cloudflare Workers |
+| `EVE_AUTH_BEARER` | Bearer token for production auth |
+| `EVE_AUTH_MODE` | Auth mode override (`none`, `token`, `bearer`) |
+| `NEXT_PUBLIC_BASE_PATH` | Base path for docs site (GitHub Pages) |
+
+See [environment variables](/docs/deployment/env-vars) and
+[eve.config.ts guide](/docs/guides/eve-config) for usage.

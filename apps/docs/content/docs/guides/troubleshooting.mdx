@@ -1,15 +1,125 @@
 ---
 title: Troubleshooting
-description: Common issues and solutions
+description: Common issues, their causes, and how to fix them
 ---
 
 # Troubleshooting
 
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| 409 on session start | Stale `continuationToken` | Create a new session |
-| 410 on follow-up | Terminal session | Session has ended, create a new one |
-| 400 bad request | Invalid `startIndex` | Ensure `startIndex` is a non-negative integer |
-| 401 unauthorized | Missing or invalid auth token | Configure auth or use `auth: 'none'` for development |
-| Stream not progressing | Flue agent not running | Start `flue dev` or check `FLUE_BASE_URL` |
-| CORS errors in browser | Missing CORS middleware | Add `createEveCorsMiddleware` to server |
+## HTTP errors
+
+| Code | Symptom | Cause | Fix |
+|------|---------|-------|-----|
+| 400 | Bad request on stream | `startIndex` is negative or not a number | Pass a non-negative integer: `?startIndex=0` |
+| 400 | Bad request on POST | Malformed JSON body | Validate your request body |
+| 401 | Unauthorized | Missing or invalid auth token | Pass `Authorization: Bearer <token>` or set `auth: 'none'` in dev |
+| 404 | Route not found | Plugin not loaded or proxy not configured | Verify `flueEve()` is in `vite.config.ts` plugins array |
+| 409 | Conflict on follow-up | Stale `continuationToken` — turn still in progress | Wait for `session.waiting` before sending next message |
+| 410 | Gone on follow-up | Session has ended (terminal state) | Create a new session with `POST /eve/v1/session` |
+| 500 | Internal error | Flue server error or unhandled exception | Check Flue server logs |
+
+## Dev server issues
+
+### `ERR_MODULE_NOT_FOUND` for `@flue-eve/*` or `flue-eve/*`
+
+The package is not installed in your project.
+
+```bash
+npm install flue-eve
+```
+
+### `/eve/v1/health` returns 404
+
+The Vite plugin is not loaded or the proxy is misconfigured.
+
+1. Verify `flueEve()` is in `vite.config.ts` plugins
+2. Check that `eveMount` matches the URL you're requesting (default: `/eve/v1`)
+3. Restart the dev server
+
+### Stream never produces events
+
+The Flue agent is not running or admission is misconfigured.
+
+1. Check `FLUE_BASE_URL` is set to a running Flue instance
+2. With mock admission (default), verify no errors in the console
+3. Try requesting health: `curl http://localhost:5173/eve/v1/health`
+
+### CORS errors in the browser
+
+When running split-origin (different frontend/backend origins), add CORS middleware:
+
+```ts
+import { createEveCorsMiddleware } from '@flue-eve/compat-server'
+
+app.use('/eve/v1/*', createEveCorsMiddleware({
+  origin: 'https://your-frontend.com',
+}))
+```
+
+For same-origin dev (Vite proxy), CORS is not needed.
+
+## Mock admission issues
+
+### Getting deterministic responses instead of LLM
+
+Mock admission is active because no real Flue server is available.
+
+- **Dev:** Start `flue dev` and set `FLUE_BASE_URL=http://127.0.0.1:3583`
+- **Production:** In-process admission is used automatically when deployed together
+
+### Mock responses don't match my use case
+
+Mock admission returns hardcoded event streams for testing. It's not a real LLM.
+Use loopback or in-process admission for real agent behavior.
+
+## Build and deployment issues
+
+### Build fails with TypeScript errors
+
+Ensure all dependencies are installed and built:
+
+```bash
+pnpm install
+pnpm -r run build
+```
+
+### Cloudflare Worker: sessions lost on restart
+
+Without persistence, sessions are ephemeral. Add KV or DO persistence:
+
+```ts
+createEveWorkerApp({
+  persistence: {
+    type: 'kv',
+    kvNamespace: MY_KV,
+  },
+})
+```
+
+### Cloudflare Worker: 500 on session start
+
+Check that the KV or DO binding is configured in `wrangler.jsonc` and matches
+the binding name used in `createEveWorkerApp`.
+
+## Token and session issues
+
+### `continuationToken` is the same every turn
+
+This is expected in v1. The token is stable per session. Future versions may
+implement per-turn rotation.
+
+### Session replay shows wrong events
+
+The journal might be corrupted. Check persistence:
+
+1. In-memory: restart the server to clear the journal
+2. SQLite: delete the database file and restart
+3. Redis: flush the key prefix
+4. KV/DO: delete the KV entries or DO instance
+
+## Still stuck?
+
+- Check the [PLAN.md](https://github.com/doeixd/flue-eve/blob/master/PLAN.md) for invariants and edge cases
+- Read the [architecture](/docs/concepts/architecture) page to understand the data flow
+- Run `vp test` to verify the project is in a working state
+- Install the [migration skill](/docs/guides/migrate-existing-eve-agent) and
+  ask your AI coding agent for help

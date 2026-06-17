@@ -1,23 +1,45 @@
 ---
 title: Public Package
-description: The planned single-package install experience
+description: The single-package install experience
 ---
 
 # Public Package
 
-The target user experience is installing a single package:
+The target user experience is a single install:
 
 ```bash
 npm install flue-eve
 ```
 
-And using subpath imports:
+All capabilities are available through subpath imports:
 
 ```ts
-import { flueEve } from 'flue-eve/vite';
-import { Client } from 'flue-eve/client';
-import { useEveAgent } from 'flue-eve/react';
+import { flueEve } from 'flue-eve/vite'
+import { Client } from 'flue-eve/client'
+import { useEveAgent } from 'flue-eve/react'
+import { eveCompat } from 'flue-eve/server'
+import { createEveWorkerApp } from 'flue-eve/server/worker'
+import { defineFlueConnection } from 'flue-eve/connections'
 ```
 
-**Status:** Planned. Currently, individual `@flue-eve/*` packages must be
-installed separately.
+The `flue-eve` aggregator package re-exports from all `@flue-eve/*` packages
+under a unified namespace.
+
+## Installation
+
+```bash
+npm install flue-eve
+# or
+pnpm add flue-eve
+# or
+yarn add flue-eve
+```
+
+## Requirements
+
+- Node ≥ 22.19.0
+- Vite 5 or 6
+- React 18 or 19 (for `flue-eve/react`)
+- `@flue/runtime` (optional peer — needed for production with Flue)
+
+See [package overview](/docs/packages) for the full list of subpath imports.

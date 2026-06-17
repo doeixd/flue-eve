@@ -1,22 +1,102 @@
 ---
 title: Connections and OAuth
-description: How third-party connections and OAuth work
+description: How MCP connections, tool name mapping, and OAuth authorization work
 ---
 
 # Connections and OAuth
 
-The connections shim (`@flue-eve/connections`) maps Flue MCP tool calls
-to Eve `connection__*` tool names and handles OAuth flows.
+The `@flue-eve/connections` package bridges Flue MCP tools into Eve sessions
+and handles OAuth authorization flows.
 
 ## Tool name mapping
 
-| Flue tool | Eve surface | Status |
-|-----------|-------------|--------|
-| `mcp__github_search` | `connection__github_search` | Supported |
-| `mcp__slack_post` | `connection__slack_post` | Supported |
+Flue connections expose tools with `mcp__` prefixed names. The mapper renames
+these to Eve's `connection__` prefix:
+
+| Flue tool name | Eve tool name |
+|---------------|---------------|
+| `mcp__github_search` | `connection__github_search` |
+| `mcp__linear_list_issues` | `connection__linear_list` |
+| `mcp__slack_post_message` | `connection__slack` |
+| `mcp__vercel_list_projects` | `connection__vercel` |
+
+This renaming happens automatically in `mapFlueToEve()`. The `connection__`
+prefix is the convention Eve clients expect.
+
+## Why the prefix matters
+
+Eve's tool call events include tool names in `tool_call` and `tool_result`
+events. The `connection__` prefix tells Eve clients that this tool is a
+third-party connection — it affects how the UI renders tool invocations
+and how authorization flows are triggered.
 
 ## OAuth flow
 
-The `@vercel/connect` bridge provides token exchange and refresh for
-OAuth-based connections. Compat-server includes the callback route
-at `/eve/v1/oauth/callback`.
+When a connection requires OAuth, the session automatically parks and resumes:
+
+```text
+1. Agent calls a connection tool
+2. Connection requires OAuth auth
+3. compat-server emits authorization.required
+4. Client opens the auth URL in a browser
+5. User completes OAuth at the provider
+6. Provider redirects to /eve/v1/oauth/callback
+7. compat-server emits authorization.granted
+8. Stream resumes, tools are available
+```
+
+### Stream events
+
+```jsonl
+{"type":"authorization.required","data":{"connection":"github","authUrl":"https://github.com/login/oauth/authorize?..."},"streamIndex":3}
+{"type":"authorization.granted","data":{"connection":"github"},"streamIndex":5}
+```
+
+### Callback route
+
+The compat-server automatically registers `GET /eve/v1/oauth/callback` when
+connections with OAuth are configured. The callback validates the OAuth code
+and state, exchanges it for a token (via `@vercel/connect` if available), and
+resumes the agent stream.
+
+## Configuring OAuth connections
+
+### With @vercel/connect (recommended)
+
+```ts
+import { defineFlueConnectionWithConnect } from '@flue-eve/connections/connect'
+
+export const github = defineFlueConnectionWithConnect({
+  name: 'github',
+  // @vercel/connect manages tokens automatically
+})
+```
+
+### Manual OAuth
+
+```ts
+import { defineFlueConnection } from '@flue-eve/connections'
+
+export const github = defineFlueConnection({
+  name: 'github',
+  auth: {
+    type: 'oauth2',
+    authorizationUrl: 'https://github.com/login/oauth/authorize',
+    tokenUrl: 'https://github.com/login/oauth/access_token',
+    clientId: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+  },
+  tools: ['search_repositories', 'get_file_contents'],
+})
+```
+
+## Security
+
+- OAuth tokens are never sent to the browser
+- The `authorization.url` event includes the auth URL but not the client secret
+- The callback route validates state to prevent CSRF
+- Proxied requests strip `authorization` headers to prevent token leakage
+
+See [connections guide](/docs/guides/connections) for the full connection API and
+[authoring connections](/docs/guides/authoring-connections) for writing connection
+definitions.

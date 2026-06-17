@@ -1,19 +1,25 @@
 ---
 title: Error Reference
-description: HTTP error codes and meanings
+description: Complete HTTP error codes, their meanings, and response shapes
 ---
 
-# Errors
+# Error Reference
+
+## HTTP status codes
 
 | Code | Meaning | When |
 |------|---------|------|
-| 400 | Bad request | Invalid `startIndex`, malformed JSON |
-| 401 | Unauthorized | Missing or invalid auth token |
-| 409 | Conflict | Stale `continuationToken` |
-| 410 | Gone | Terminal session cannot be resumed |
-| 500 | Internal error | Server-side failure |
+| 400 | Bad Request | Invalid `startIndex`, malformed JSON, missing required fields |
+| 401 | Unauthorized | Missing or invalid auth token (production only) |
+| 404 | Not Found | Session not found, or route not configured |
+| 409 | Conflict | Stale `continuationToken` — turn is still active |
+| 410 | Gone | Session has ended — terminal state, cannot resume |
+| 422 | Unprocessable Entity | Valid JSON but invalid semantic content |
+| 500 | Internal Server Error | Unhandled server-side exception |
 
-Error responses:
+## Error response format
+
+All errors return a JSON body with an `error` object:
 
 ```json
 {
@@ -23,3 +29,153 @@ Error responses:
   }
 }
 ```
+
+## Error codes
+
+### session_not_found (404)
+
+The requested session ID does not exist.
+
+```json
+{
+  "error": {
+    "code": "session_not_found",
+    "message": "Session ses_abc123 not found"
+  }
+}
+```
+
+### invalid_start_index (400)
+
+The `startIndex` query parameter is invalid.
+
+```json
+{
+  "error": {
+    "code": "invalid_start_index",
+    "message": "startIndex must be a non-negative integer"
+  }
+}
+```
+
+### stale_continuation_token (409)
+
+The continuation token is stale — the previous turn is still active.
+
+```json
+{
+  "error": {
+    "code": "stale_continuation_token",
+    "message": "The session turn is still active. Wait for session.waiting before sending a follow-up."
+  }
+}
+```
+
+### session_terminated (410)
+
+The session has ended and cannot accept more messages.
+
+```json
+{
+  "error": {
+    "code": "session_terminated",
+    "message": "Session ses_abc123 has ended. Create a new session to continue."
+  }
+}
+```
+
+### invalid_body (400)
+
+The request body is malformed or missing required fields.
+
+```json
+{
+  "error": {
+    "code": "invalid_body",
+    "message": "Missing required field: message"
+  }
+}
+```
+
+### unauthorized (401)
+
+Authentication is required but not provided or invalid.
+
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Authentication required"
+  }
+}
+```
+
+### admission_failed (500)
+
+The Flue admission (submitting the turn to the agent) failed.
+
+```json
+{
+  "error": {
+    "code": "admission_failed",
+    "message": "Workflow submission failed"
+  }
+}
+```
+
+### channel_dispatch_failed (500)
+
+The channel webhook dispatch failed.
+
+```json
+{
+  "error": {
+    "code": "channel_dispatch_failed",
+    "message": "Channel dispatch failed"
+  }
+}
+```
+
+### internal_error (500)
+
+An unhandled server-side error occurred.
+
+```json
+{
+  "error": {
+    "code": "internal_error",
+    "message": "An internal error occurred"
+  }
+}
+```
+
+## Production error behavior
+
+In production, internal error messages are **sanitized** — they never include
+stack traces, internal paths, or exception details. Only the error code and a
+generic message are returned.
+
+## Handling errors in the client
+
+```ts
+try {
+  const session = await client.createSession({ message: 'Hello' })
+} catch (err) {
+  switch (err.status) {
+    case 401:
+      // Re-authenticate
+      break
+    case 409:
+      // Wait and retry
+      break
+    case 410:
+      // Create a new session
+      break
+    case 500:
+      // Server error — retry or notify user
+      break
+  }
+}
+```
+
+See [troubleshooting](/docs/guides/troubleshooting) for common scenarios and fixes.

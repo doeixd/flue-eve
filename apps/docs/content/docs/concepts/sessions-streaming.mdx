@@ -1,29 +1,96 @@
 ---
 title: Sessions, Runs, and Streaming
-description: How sessions and streaming work
+description: How sessions, continuations, tokens, and streaming work
 ---
 
 # Sessions, Runs, and Streaming
 
 ## Sessions
 
-A **session** represents a conversation with an agent. Each session has a
-unique `sessionId` (v1: `ses_*` format) and a `continuationToken` for
-resuming the conversation.
+A **session** represents a conversation with an agent. Each session has a unique
+`sessionId` (v1: `ses_*` format) and a `continuationToken` for resuming the
+conversation across turns.
+
+```http
+POST /eve/v1/session
+Content-Type: application/json
+
+{ "message": "Hello" }
+```
+
+Response (202 Accepted):
+
+```json
+{
+  "sessionId": "ses_abc123",
+  "continuationToken": "tok_xyz789"
+}
+```
+
+## Continuation tokens
+
+The `continuationToken` lets the client resume the session for the next turn:
+
+```http
+POST /eve/v1/session/ses_abc123
+Content-Type: application/json
+
+{ "message": "What about...", "continuationToken": "tok_xyz789" }
+```
+
+**Token behavior (v1):**
+
+- The **same** `continuationToken` is returned every turn — stable per session
+- A **stale** token (client sends an old token while a turn is still active) → **409 Conflict**
+- A **terminal** session (agent completed, no more turns possible) → **410 Gone**
+- Future versions may implement per-turn rotation; v1 keeps it simple
 
 ## Streaming
 
-The server responds with NDJSON (`application/x-ndjson; charset=utf-8`),
-one JSON event per line. The `startIndex` parameter lets clients reconnect
-and resume from the last known event:
+The stream endpoint returns NDJSON (`application/x-ndjson; charset=utf-8`),
+one JSON event per line:
 
 ```http
-GET /eve/v1/session/:sessionId/stream?startIndex=42
+GET /eve/v1/session/ses_abc123/stream
 ```
 
-The server replays events from the journal starting at index 42.
+Response headers:
 
-## Comparison
+```
+x-eve-stream-format: ndjson
+x-eve-stream-version: 16
+```
+
+### Reconnect with startIndex
+
+The `startIndex` parameter replays from a known position after a dropped
+connection:
+
+```http
+GET /eve/v1/session/ses_abc123/stream?startIndex=42
+```
+
+The server replays events from the **event journal** starting at index 42,
+then continues with live events. The journal is the sole owner of `streamIndex`
+— never using Flue Durable Streams offsets directly.
+
+**Invalid `startIndex`** values (negative, NaN) → **400 Bad Request**.
+
+## Session lifecycle
+
+```text
+POST /session  (202)
+  → session.started event
+  → agent.start
+  → agent.message (streams text/tool events)
+  → agent.complete
+  → session.waiting event
+POST /session/:id  (200) — follow-up with continuationToken
+  → same stream lifecycle
+GET /session/:id/stream  — connect anytime to replay + tail
+```
+
+## Eve ↔ Flue mapping
 
 | Concept | Eve | Flue adapter |
 |---------|-----|-------------|
@@ -31,3 +98,6 @@ The server replays events from the journal starting at index 42.
 | Resume token | `continuationToken` | Adapter-issued (stable per session) |
 | Stream | NDJSON + `startIndex` | Journal-owned `streamIndex` |
 | Turn submit | `POST /session` returns before completion | `POST /agents/:name/:id` |
+
+See [events and journal](/docs/concepts/events-and-journal) for how events are
+translated and stored.

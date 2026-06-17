@@ -7,7 +7,7 @@
 URL: /docs/concepts/admission
 
 ## Architecture
-> How flue-eve layers work together
+> How flue-eve layers work together — data flow, responsibilities, deployment topologies
 URL: /docs/concepts/architecture
 
 ## Authoring Model
@@ -15,83 +15,71 @@ URL: /docs/concepts/architecture
 URL: /docs/concepts/authoring-model
 
 ## Connections and OAuth
-> How third-party connections and OAuth work
+> How MCP connections, tool name mapping, and OAuth authorization work
 URL: /docs/concepts/connections-oauth
 
 ## Eve and Flue
-> How Eve and Flue relate in this project
+> How Eve and Flue relate in flue-eve — what each provides and how they map
 URL: /docs/concepts/eve-and-flue
 
 ## Events and Journal
-> How events are translated and stored
+> How events are translated, stored, and replayed
 URL: /docs/concepts/events-and-journal
 
 ## Migration Tiers
-> Eve compatibility migration levels
+> Tier-based classification for migrating Eve projects to flue-eve
 URL: /docs/concepts/migration-tiers
 
 ## Sessions, Runs, and Streaming
-> How sessions and streaming work
+> How sessions, continuations, tokens, and streaming work
 URL: /docs/concepts/sessions-streaming
 
 ## Contributing
 > How to contribute to flue-eve
 URL: /docs/contributing
 
-## Authentication
-> Production authentication for Eve routes
+## deployment\auth.mdx
 URL: /docs/deployment/auth
 
-## Cloudflare Admission
-> Admission strategies on Workers
+## deployment\cloudflare\admission.mdx
 URL: /docs/deployment/cloudflare/admission
 
-## Cloudflare Overview
-> Deploy flue-eve on Cloudflare
+## deployment\cloudflare\index.mdx
 URL: /docs/deployment/cloudflare/index
 
-## KV and Durable Object Persistence
-> Storage backends for Cloudflare Workers
+## deployment\cloudflare\kv-do-persistence.mdx
 URL: /docs/deployment/cloudflare/kv-do-persistence
 
-## Cloudflare Troubleshooting
-> Common Cloudflare deployment issues
+## deployment\cloudflare\troubleshooting.mdx
 URL: /docs/deployment/cloudflare/troubleshooting
 
-## Worker Setup
-> Set up a Cloudflare Worker for Eve routes
+## deployment\cloudflare\worker.mdx
 URL: /docs/deployment/cloudflare/worker
 
-## Workers AI
-> Using Workers AI with flue-eve
+## deployment\cloudflare\workers-ai.mdx
 URL: /docs/deployment/cloudflare/workers-ai
 
-## Environment Variables
-> Environment variable reference
+## deployment\env-vars.mdx
 URL: /docs/deployment/env-vars
 
-## Deployment Overview
-> Deploy your flue-eve app
+## deployment\index.mdx
 URL: /docs/deployment/index
 
-## Node.js
-> Deploy on Node.js
+## deployment\node.mdx
 URL: /docs/deployment/node
 
-## Persistence
-> Journal and session persistence adapters
+## deployment\persistence.mdx
 URL: /docs/deployment/persistence
 
-## Split-Origin (Mode B)
-> Separate the build server from the Flue server
+## deployment\split-origin.mdx
 URL: /docs/deployment/split-origin
 
 ## Client
-> Use the Eve-compatible client SDK
+> Use the Eve-compatible client SDK for programmatic access
 URL: /docs/getting-started/client
 
 ## Cloudflare Worker
-> Deploy on Cloudflare Workers
+> Deploy flue-eve on Cloudflare Workers with KV/DO persistence
 URL: /docs/getting-started/cloudflare-worker
 
 ## From Eve
@@ -99,11 +87,11 @@ URL: /docs/getting-started/cloudflare-worker
 URL: /docs/getting-started/from-eve
 
 ## Frontend only
-> Use the client SDK without a flue-eve server
+> Use the client SDK and React hook without a flue-eve server
 URL: /docs/getting-started/frontend-only
 
 ## Getting Started
-> Choose your path
+> Choose your path to start building with flue-eve
 URL: /docs/getting-started/index
 
 ## New project
@@ -111,15 +99,15 @@ URL: /docs/getting-started/index
 URL: /docs/getting-started/new-project
 
 ## React
-> Use useEveAgent in a React app
+> Use useEveAgent in a React app to build agent-powered chat UIs
 URL: /docs/getting-started/react
 
 ## Authoring Connections
-> Configure third-party connections
+> Write connection definitions for MCP tools and OAuth integrations
 URL: /docs/guides/authoring-connections
 
 ## Authoring Instructions
-> Write agent instructions
+> Write agent instructions (system prompt)
 URL: /docs/guides/authoring-instructions
 
 ## Authoring Tools
@@ -127,47 +115,44 @@ URL: /docs/guides/authoring-instructions
 URL: /docs/guides/authoring-tools
 
 ## Client Guide
-> Using the Eve-compatible client SDK
+> Comprehensive guide to the Eve-compatible client SDK
 URL: /docs/guides/client
 
 ## Connections Guide
-> Using third-party connections
+> Using third-party connections — MCP tools mapped to Eve sessions
 URL: /docs/guides/connections
 
-## eve.config.ts
-> Configuration file reference
+## guides\eve-config.mdx
 URL: /docs/guides/eve-config
 
 ## Migrate an Existing Eve Agent
-> Migrate an agent written for Eve
+> Step-by-step migration of an Eve project to flue-eve
 URL: /docs/guides/migrate-existing-eve-agent
 
 ## Multi-Agent
-> Set up multiple agents
+> Define and route between multiple agents in flue-eve
 URL: /docs/guides/multi-agent
 
 ## React Guide
-> Using the useEveAgent hook
+> Comprehensive guide to useEveAgent — reducers, HITL, persistence, patterns
 URL: /docs/guides/react
 
 ## Troubleshooting
-> Common issues and solutions
+> Common issues, their causes, and how to fix them
 URL: /docs/guides/troubleshooting
 
 ## Vite Plugin
-> Configure the flue-eve Vite plugin
+> Configure the flue-eve Vite plugin — proxy, scaffold, aliases
 URL: /docs/guides/vite-plugin
 
 ## Introduction
 > flue-eve — Eve authoring, Flue runtime
 URL: /docs/index
 
-## Client Package
-> flue-eve/client reference
+## packages\client.mdx
 URL: /docs/packages/client
 
-## Connections Package
-> "@flue-eve/connections reference"
+## packages\connections.mdx
 URL: /docs/packages/connections
 
 ## Package Overview
@@ -175,57 +160,51 @@ URL: /docs/packages/connections
 URL: /docs/packages/index
 
 ## Public Package
-> The planned single-package install experience
+> The single-package install experience
 URL: /docs/packages/public-package
 
-## React Package
-> flue-eve/react reference
+## packages\react.mdx
 URL: /docs/packages/react
 
-## Server Package
-> "@flue-eve/compat-server usage"
+## packages\server.mdx
 URL: /docs/packages/server
 
-## Vite Plugin Package
-> flue-eve/vite reference
+## packages\vite.mdx
 URL: /docs/packages/vite
 
-## Cloudflare Reference
-> Cloudflare-specific API reference
+## reference\cloudflare.mdx
 URL: /docs/reference/cloudflare
 
 ## Compatibility Matrix
-> Eve surface compatibility status
+> Eve surface compatibility status — what's done, partial, and planned
 URL: /docs/reference/compatibility
 
 ## Configuration Reference
-> All configuration options
+> Complete configuration options for Vite plugin, compat-server, and env vars
 URL: /docs/reference/config
 
 ## Error Reference
-> HTTP error codes and meanings
+> Complete HTTP error codes, their meanings, and response shapes
 URL: /docs/reference/errors
 
-## Eve-to-Flue Mapping
-> How Eve concepts map to Flue
+## reference\eve-to-flue-mapping.mdx
 URL: /docs/reference/eve-to-flue-mapping
 
 ## Event Types
-> NDJSON event types in the stream
+> Complete NDJSON event catalog — every event type, its shape, and when it's emitted
 URL: /docs/reference/events
 
 ## HTTP API Reference
-> Eve HTTP route reference
+> Complete Eve HTTP route reference — all routes, request/response shapes, headers
 URL: /docs/reference/http-api
 
 ## Full Compatibility
-> Eve compatibility closure list
+> Milestone status and remaining work
 URL: /docs/roadmap/full-compatibility
 
 ## Migration Support
-> Tooling for migrating from Eve
+> Automated migration tooling from Eve to flue-eve
 URL: /docs/roadmap/migration-support
 
-## Why flue-eve
-> Eve ergonomics + Flue openness belong together
+## why.mdx
 URL: /docs/why

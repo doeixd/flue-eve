@@ -14,41 +14,78 @@ npm create vite@latest my-app -- --template react-ts
 cd my-app
 ```
 
-## 2. Install dependencies
+## 2. Install
 
 ```bash
-npm install flue-eve @flue-eve/client
+npm install flue-eve
 ```
 
-## 3. Add the Vite plugin
+## 3. Initialize
+
+```bash
+npx flue-eve init
+```
+
+Creates the Eve compat sidecar, agent definition, and Flue runtime files.
+
+## 4. Add the Vite plugin
 
 ```ts
 // vite.config.ts
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { flueEve } from 'flue-eve/vite';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { flueEve } from 'flue-eve/vite'
 
 export default defineConfig({
   plugins: [react(), flueEve()],
-});
+})
 ```
 
-## 4. Use the client
+## 5. Use the client or React hook
 
 ```tsx
 // src/App.tsx
-import { Client } from 'flue-eve/client';
+import { useEveAgent, createEveSessionPersistence } from 'flue-eve/react'
 
-const client = new Client({ baseUrl: '/eve/v1' });
-const session = client.createSession({ message: 'Hello!' });
+const persistence = createEveSessionPersistence({ storage: localStorage })
+const { messages, send, ready, stop } = useEveAgent(persistence)
+```
+
+Or use the client SDK directly:
+
+```ts
+import { Client } from 'flue-eve/client'
+
+const client = new Client({ baseUrl: '/eve/v1' })
+const session = await client.createSession({ message: 'Hello!' })
 
 for await (const event of session.stream()) {
-  console.log(event);
+  console.log(event)
 }
 ```
 
-## 5. Run
+## 6. Run
 
 ```bash
 npm run dev
 ```
+
+Vite + Flue start together on `http://localhost:5173`. With mock admission (default),
+the agent returns deterministic responses without needing an LLM key.
+
+Test it:
+
+```bash
+curl -X POST http://localhost:5173/eve/v1/session \
+  -H 'content-type: application/json' \
+  -d '{"message":"Hello"}'
+```
+
+To test with a real LLM, start `flue dev` and set `FLUE_BASE_URL=http://127.0.0.1:3583`.
+
+## Next steps
+
+- [Authoring tools](/docs/guides/authoring-tools) — define your agent's tools
+- [Authoring instructions](/docs/guides/authoring-instructions) — write system prompts
+- [Eve config](/docs/guides/eve-config) — customize plugin options
+- [Deployment](/docs/deployment) — deploy to production

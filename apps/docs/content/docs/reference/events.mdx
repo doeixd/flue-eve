@@ -1,33 +1,272 @@
 ---
 title: Event Types
-description: NDJSON event types in the stream
+description: Complete NDJSON event catalog — every event type, its shape, and when it's emitted
 ---
 
 # Event Types
 
-## Agent events
+Every event is one JSON object per line in the NDJSON stream. Each event has
+a `type` field, an optional `data` payload, and a `streamIndex` number.
 
-| Type | Description |
-|------|-------------|
-| `agent.start` | Agent turn started |
-| `agent.content.delta` | Text content delta |
-| `agent.content.done` | Content block complete |
-| `agent.tool_call` | Tool call started |
-| `agent.tool_result` | Tool result received |
-| `agent.complete` | Agent turn completed |
+## Event structure
 
-## System events
-
-| Type | Description |
-|------|-------------|
-| `error` | Error event |
-| `authorization.required` | Auth or consent required (HITL) |
-| `authorization.response` | User provided input |
-
-## Event format
-
-```json
-{ "type": "agent.content.delta", "data": { "text": "Hello" } }
+```ts
+type EveStreamEvent = {
+  type: string
+  data?: Record<string, unknown>
+  streamIndex: number
+}
 ```
 
-Each event occupies one line in the NDJSON stream.
+## Session lifecycle events
+
+### session.started
+
+A new session was created.
+
+```json
+{ "type": "session.started", "data": {}, "streamIndex": 0 }
+```
+
+### session.waiting
+
+The session is idle and ready for the next user turn. This unlocks the
+composer in `useEveAgent`.
+
+```json
+{ "type": "session.waiting", "streamIndex": 15 }
+```
+
+### session.failed
+
+A terminal error occurred. The session cannot be resumed.
+
+```json
+{
+  "type": "session.failed",
+  "data": {
+    "sessionId": "ses_abc123",
+    "error": "Admission failed: Flue server unreachable"
+  },
+  "streamIndex": 16
+}
+```
+
+## Agent turn events
+
+### agent.start
+
+An agent turn has begun.
+
+```json
+{ "type": "agent.start", "streamIndex": 0 }
+```
+
+### agent.content.delta
+
+A fragment of streaming text from the agent.
+
+```json
+{
+  "type": "agent.content.delta",
+  "data": { "text": "Hello" },
+  "streamIndex": 1
+}
+```
+
+Multiple `content.delta` events form the full text response.
+
+### message.appended
+
+A complete message state update. Contains the full message with all
+accumulated content.
+
+```json
+{
+  "type": "message.appended",
+  "data": {
+    "id": "msg_abc123",
+    "role": "assistant",
+    "content": "Hello! How can I help?",
+    "toolCalls": []
+  },
+  "streamIndex": 4
+}
+```
+
+### agent.tool_call
+
+The agent invoked a tool.
+
+```json
+{
+  "type": "agent.tool_call",
+  "data": {
+    "toolCallId": "call_xyz",
+    "tool": {
+      "name": "connection__github_search",
+      "description": "Search GitHub repositories",
+      "parameters": { "type": "object", "properties": { "query": { "type": "string" } } }
+    },
+    "args": { "query": "flue-eve" }
+  },
+  "streamIndex": 5
+}
+```
+
+### agent.tool_result
+
+A tool call completed.
+
+```json
+{
+  "type": "agent.tool_result",
+  "data": {
+    "toolCallId": "call_xyz",
+    "tool": { "name": "connection__github_search" },
+    "result": {
+      "repositories": [
+        { "name": "flue-eve", "stars": 42 }
+      ]
+    },
+    "isError": false
+  },
+  "streamIndex": 7
+}
+```
+
+When `isError` is `true`, `result` contains error details.
+
+### agent.complete
+
+The agent turn finished successfully.
+
+```json
+{ "type": "agent.complete", "streamIndex": 10 }
+```
+
+### result.completed
+
+A structured result when `outputSchema` was provided in the request.
+
+```json
+{
+  "type": "result.completed",
+  "data": {
+    "result": {
+      "answer": "The capital of France is Paris",
+      "confidence": 0.99
+    }
+  },
+  "streamIndex": 11
+}
+```
+
+## HITL (Human-in-the-loop) events
+
+### input.requested
+
+The agent is paused and waiting for user input.
+
+```json
+{
+  "type": "input.requested",
+  "data": {
+    "type": "approval",
+    "prompt": "Should I proceed with deleting this resource?",
+    "options": ["Approve", "Reject"]
+  },
+  "streamIndex": 6
+}
+```
+
+The client sends `inputResponses` in the next `POST /session/:id` to resume.
+
+### input.resolved
+
+The HITL input was received and the agent is resuming.
+
+```json
+{ "type": "input.resolved", "streamIndex": 7 }
+```
+
+## Authorization events (OAuth)
+
+### authorization.required
+
+A connection needs OAuth authorization.
+
+```json
+{
+  "type": "authorization.required",
+  "data": {
+    "connection": "github",
+    "authUrl": "https://github.com/login/oauth/authorize?client_id=..."
+  },
+  "streamIndex": 3
+}
+```
+
+### authorization.granted
+
+OAuth authorization was completed.
+
+```json
+{
+  "type": "authorization.granted",
+  "data": { "connection": "github" },
+  "streamIndex": 5
+}
+```
+
+## Message event shapes
+
+### message.appended
+
+```json
+{
+  "type": "message.appended",
+  "data": {
+    "id": "msg_abc",
+    "role": "assistant" | "user",
+    "content": "Full message text",
+    "toolCalls": [
+      {
+        "id": "tc_1",
+        "toolCallId": "call_xyz",
+        "toolName": "connection__github_search",
+        "args": { "query": "..." },
+        "result": { "repositories": [...] },
+        "isError": false,
+        "status": "complete"
+      }
+    ]
+  },
+  "streamIndex": 8
+}
+```
+
+### message.completed
+
+```json
+{
+  "type": "message.completed",
+  "data": {
+    "id": "msg_abc",
+    "role": "assistant",
+    "content": "Full message text"
+  },
+  "streamIndex": 12
+}
+```
+
+## Stream constants
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `STREAM_FORMAT` | `"ndjson"` | Stream format identifier |
+| `STREAM_VERSION` | `16` | Eve stream protocol version |
+| `STREAM_CONTENT_TYPE` | `"application/x-ndjson; charset=utf-8"` | HTTP content type |
+
+See [eve-to-flue mapping](/docs/reference/eve-to-flue-mapping) for how Flue
+internal events map to these Eve event types.

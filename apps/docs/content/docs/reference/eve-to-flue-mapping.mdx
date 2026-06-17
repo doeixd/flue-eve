@@ -11,6 +11,6 @@ description: How Eve concepts map to Flue
 | Turn | `POST /agents/:name/:id` | Admission sends message to Flue |
 | Stream | Durable Streams | Translated to NDJSON by mapper |
 | Token | Adapter-issued | Stable per-session in v1 |
-| Agent file layout | `createAgent` config | Eve layout planned |
+| Agent file layout | `createAgent` config | Scaffolded from Eve layout via `npx flue-eve init` |
 | Channel | Flue channel event | Bridged by `@flue-eve/channels` |
 | Workflow | Flue workflow run | Bridged by `@flue-eve/workflows` |

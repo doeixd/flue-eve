@@ -1,15 +1,17 @@
 ---
 title: Cloudflare Worker
-description: Deploy on Cloudflare Workers
+description: Deploy flue-eve on Cloudflare Workers with KV/DO persistence
 ---
 
 # Cloudflare Worker
 
-Use `createEveWorkerApp` for a Cloudflare Worker that handles Eve routes
-with KV or Durable Object persistence:
+flue-eve ships with a Cloudflare Worker entry point that handles Eve HTTP
+routes with KV or Durable Object persistence.
+
+## Minimal setup
 
 ```ts
-import { createEveWorkerApp } from '@flue-eve/compat-server/worker';
+import { createEveWorkerApp } from '@flue-eve/compat-server/worker'
 
 export default createEveWorkerApp({
   agentName: 'assistant',
@@ -17,7 +19,124 @@ export default createEveWorkerApp({
     type: 'kv',
     kvNamespace: MY_KV,
   },
-});
+})
 ```
 
-See [Cloudflare deployment](/docs/deployment/cloudflare) for detailed setup.
+## With Durable Object journal
+
+For larger journals or multi-region replication, use Durable Objects:
+
+```ts
+export { EveSessionJournalDO } from '@flue-eve/compat-server/worker'
+
+import { createEveWorkerApp } from '@flue-eve/compat-server/worker'
+
+export default createEveWorkerApp({
+  agentName: 'assistant',
+  persistence: {
+    type: 'durable-object',
+    doNamespace: EVE_JOURNAL,
+  },
+})
+```
+
+Add the DO binding in `wrangler.jsonc`:
+
+```jsonc
+{
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "EVE_JOURNAL",
+        "class_name": "EveSessionJournalDO"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["EveSessionJournalDO"]
+    }
+  ]
+}
+```
+
+## Admission on Workers
+
+By default, the Worker uses mock admission — deterministic responses without
+an LLM. For real agent execution, set up Service Binding:
+
+1. Deploy a Flue agent as a separate Worker
+2. Add a Service Binding to your EVE Worker's `wrangler.jsonc`:
+
+```jsonc
+{
+  "services": [
+    { "binding": "FLUE_AGENT", "service": "my-flue-agent" }
+  ]
+}
+```
+
+3. Set the binding name in your Worker:
+
+```ts
+export default createEveWorkerApp({
+  agentName: 'assistant',
+  flueAgentBinding: 'FLUE_AGENT',
+})
+```
+
+The Worker will route admission requests through the Service Binding when
+available, falling back to mock admission if not configured.
+
+## Persistence types
+
+| Type | Best for | Setup |
+|------|----------|-------|
+| `kv` | Small journals, simple setup | Bind a KV namespace to your Worker |
+| `durable-object` | Large journals, multi-region | Bind a DO namespace + migration |
+| (none) | Dev, ephemeral sessions | No persistence — default |
+
+Without persistence, sessions are lost on Worker restarts or eviction.
+
+## Full example
+
+```ts
+// src/worker.ts
+export { EveSessionJournalDO } from '@flue-eve/compat-server/worker'
+
+import { createEveWorkerApp } from '@flue-eve/compat-server/worker'
+
+export default createEveWorkerApp({
+  agentName: 'assistant',
+  persistence: {
+    type: 'durable-object',
+    doNamespace: EVE_JOURNAL,
+  },
+  flueAgentBinding: 'FLUE_AGENT',
+  auth: 'token',
+  authToken: 'my-secret-token',
+})
+```
+
+```jsonc
+// wrangler.jsonc
+{
+  "name": "my-eve-worker",
+  "main": "src/worker.ts",
+  "kv_namespaces": [
+    { "binding": "MY_KV", "id": "..." }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "name": "EVE_JOURNAL", "class_name": "EveSessionJournalDO" }
+    ]
+  },
+  "services": [
+    { "binding": "FLUE_AGENT", "service": "my-flue-agent" }
+  ]
+}
+```
+
+See [Cloudflare deployment](/docs/deployment/cloudflare) for detailed setup,
+authentication, and troubleshooting.

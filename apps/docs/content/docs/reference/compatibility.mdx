@@ -1,29 +1,52 @@
 ---
 title: Compatibility Matrix
-description: Eve surface compatibility status
+description: Eve surface compatibility status — what's done, partial, and planned
 ---
 
 # Compatibility Matrix
 
-| Eve surface | Status | Milestone |
-|-------------|--------|-----------|
-| `GET /eve/v1/health` | Supported | M0 |
-| `GET /eve/v1/info` | Supported | M5 |
-| `POST /eve/v1/session` | Supported | M0 |
-| `POST /eve/v1/session/:id` | Supported | M0 |
-| `GET /eve/v1/session/:id/stream` | Supported | M0 |
-| NDJSON streaming + `startIndex` | Supported | M1 |
-| `eve/client` — `Client`, `ClientSession` | Supported | M0 |
-| `eve/react` — `useEveAgent` | Supported | M4 |
-| HITL (`input.requested`) | Supported | M5 |
-| Connections (`connection__*` tools) | Supported | M5 |
-| OAuth callback route | Supported | M5 |
-| `agent/instructions.md` | Partial (scaffold) | M7 |
-| `agent/tools/*.ts` | Planned | — |
-| `agent/connections/*.ts` | Planned | — |
-| Workflows | Supported | M8e |
-| Channels | Supported | M8e |
-| SvelteKit plugin | Supported | M8f |
-| Nuxt module | Supported | M8f |
-| Nitro plugin | Supported | M8g |
-| Cloudflare Worker | Supported | M6 |
+## Done / production-ready
+
+| Eve surface | Status | Notes |
+|-------------|--------|-------|
+| `GET /eve/v1/health` | Supported | `{ ok, status: "ready", workflowId }` |
+| `GET /eve/v1/info` | Supported | Model, agent, tools, connections |
+| `POST /eve/v1/session` | Supported | 202 + `sessionId` + `continuationToken` |
+| `POST /eve/v1/session/:id` | Supported | 200 follow-up; stable token (v1) |
+| `GET /eve/v1/session/:id/stream` | Supported | NDJSON + `startIndex` replay |
+| `eve/client` (`Client`, `ClientSession`) | Supported | Reconnect, `result()`, bearer auth |
+| `useEveAgent` | Supported | HITL projection, `stop()`, localStorage resume |
+| `input.requested` / `inputResponses` | Supported | HITL park-resume |
+| `authorization.*` OAuth park | Supported | Mock + callback route |
+| `mcp__*` → `connection__*` tools | Supported | Via `@flue-eve/connections` |
+| `outputSchema` / `result.completed` | Supported | Client `result()` extraction |
+| Same-origin Vite dev | Supported | Plugin proxy to `flue dev` |
+| Bearer auth (production) | Supported | `EVE_AUTH_BEARER` / fail-closed |
+| Journal persistence (Node) | Supported | memory, file, SQLite, Redis |
+| SvelteKit plugin | Supported | `@flue-eve/sveltekit` |
+| Nuxt module | Supported | `@flue-eve/nuxt` |
+| Nitro plugin | Supported | `@flue-eve/nitro` |
+| Workflows | Supported | `@flue-eve/workflows` |
+| Channels | Supported | `@flue-eve/channels` |
+| Multi-agent sessions | Supported | `POST /session { agent }` |
+| Agent scaffold (`instructions.md`, tools) | Supported | `npx flue-eve init` + Tier 1 auto |
+| Migration scanner | Supported | `npx flue-eve scan` |
+
+## Partial
+
+| Surface | Status | Notes |
+|---------|--------|-------|
+| Cloudflare Worker | Partial | KV/DO journal works; real agent admission via Service Binding only |
+| In-process admission | Partial | Works via internal Flue hooks; surface being stabilized |
+| Live MCP 401 | Partial | Mock e2e works; real MCP server auth pending |
+
+## Not supported (v1)
+
+| Surface | Alternative |
+|---------|-------------|
+| Eve filesystem agent discovery (`agent/tools`, `agent/connections` auto-load) | Use `npx flue-eve init` to import declarative layout |
+| Eve platform channels (Slack, Discord, etc.) | Use Flue `@flue/*` channel integrations |
+| Per-turn `continuationToken` rotation | Stable token per session (v1) |
+| `vercelOidc()` auth helpers | Use `EVE_AUTH_BEARER` or Flue auth |
+
+For the authoritative per-surface ledger, see [PLAN.md](https://github.com/doeixd/flue-eve/blob/master/PLAN.md#31-full-eve-compatibility-ledger).

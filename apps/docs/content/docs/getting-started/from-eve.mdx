@@ -5,21 +5,52 @@ description: Migrate an existing Eve project to flue-eve
 
 # From Eve
 
-If you have an existing Eve project, the migration is minimal:
+If you have an existing Eve project, the migration is mostly automated.
 
-## Change imports
+## 1. Scan
 
-```diff
-- import { Client } from 'eve/client';
-+ import { Client } from 'flue-eve/client';
+The scanner analyzes your project and reports what needs to change:
+
+```bash
+npx flue-eve scan
 ```
 
-```diff
-- import { useEveAgent } from 'eve/react';
-+ import { useEveAgent } from 'flue-eve/react';
+| Tier | What it finds | Action |
+|------|--------------|--------|
+| 0 | `useEveAgent`, `eve/client` browser imports | Zero-touch |
+| 1 | `agent/instructions.md`, `agent/tools/*.ts` | Auto-scaffold |
+| 2 | Complex tool patterns, non-standard layout | Manual review |
+| 3 | Workflow SDK, channels, schedules | Blocked |
+
+Most Eve chat agents are Tier 0/1 — see [migration tiers](/docs/concepts/migration-tiers).
+
+Use `--strict` in CI to fail on Tier 2/3 findings:
+
+```bash
+npx flue-eve scan --strict
 ```
 
-## Replace the Vite plugin
+## 2. Init
+
+```bash
+npx flue-eve init
+```
+
+Creates Flue runtime files, Eve compat sidecar, and tool adapters.
+
+## 3. Update imports
+
+The Vite plugin auto-aliases `eve/client` → `flue-eve/client` and
+`eve/react` → `flue-eve/react`. No browser import changes needed.
+
+For server code:
+
+```diff
+- import { createEveServer } from 'eve/server';
++ import { eveCompat } from '@flue-eve/compat-server';
+```
+
+## 4. Replace the Vite plugin
 
 ```diff
 - import eve from 'eve/vite';
@@ -33,21 +64,45 @@ If you have an existing Eve project, the migration is minimal:
   });
 ```
 
-## Update server configuration
+## 5. Dev
 
-Replace your Eve server with the compat-server:
-
-```diff
-- import { createEveServer } from 'eve/server';
-+ import { eveCompat } from '@flue-eve/compat-server';
+```bash
+pnpm dev
 ```
 
-See [deployment](/docs/deployment) for full server setup.
+With mock admission, you can test without an LLM key:
+
+```bash
+curl -X POST http://localhost:5173/eve/v1/session \
+  -H 'content-type: application/json' \
+  -d '{"message":"Hello"}'
+```
+
+For real LLM responses, start `flue dev` and set `FLUE_BASE_URL`:
+
+```bash
+FLUE_BASE_URL=http://127.0.0.1:3583 pnpm dev
+```
 
 ## What stays the same
 
-- All `eve/v1/*` routes
+- All `/eve/v1/*` routes
 - NDJSON streaming format
 - `sessionId` and `continuationToken` semantics
 - `useEveAgent` reducer and event types
 - Client reconnect and `startIndex` behavior
+
+## AI-assisted migration
+
+Install the bundled migration skill and ask your AI coding agent to handle it:
+
+```bash
+npx skills add doeixd/flue-eve
+```
+
+> "Migrate this Eve project to flue-eve"
+
+The agent will scan, scaffold, configure, connect the frontend, and verify.
+
+See [migrate an existing Eve agent](/docs/guides/migrate-existing-eve-agent) for
+a detailed step-by-step guide.

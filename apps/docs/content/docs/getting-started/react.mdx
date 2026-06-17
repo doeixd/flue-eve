@@ -1,22 +1,27 @@
 ---
 title: React
-description: Use useEveAgent in a React app
+description: Use useEveAgent in a React app to build agent-powered chat UIs
 ---
 
 # React
+
+The `useEveAgent` hook is the primary way to build agent-powered React UIs.
+It manages session state, streaming events, HITL pauses, and persistence for you.
+
+## Basic usage
 
 ```bash
 npm install flue-eve
 ```
 
 ```tsx
-import { useEveAgent } from 'flue-eve/react';
+import { useEveAgent } from 'flue-eve/react'
 
 function Chat() {
   const agent = useEveAgent({
     agent: 'assistant',
     api: '/eve/v1',
-  });
+  })
 
   return (
     <div>
@@ -27,6 +32,191 @@ function Chat() {
         Send
       </button>
     </div>
-  );
+  )
 }
 ```
+
+## What the hook provides
+
+The `useEveAgent` hook returns an object with these properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `messages` | `UIMessage[]` | Array of all messages in the conversation, updated live |
+| `ready` | `boolean` | `true` when the agent is accepting input |
+| `send` | `(message: string) => void` | Send a user message to the agent |
+| `stop` | `() => void` | Abort the current stream and return to ready |
+| `error` | `Error \| null` | Non-recoverable error if the session fails |
+| `input` | `{ requested: InputRequest } \| null` | Present when the agent is waiting for HITL input |
+
+## Message structure
+
+Each message in `agent.messages` has:
+
+```ts
+type UIMessage = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string            // accumulated text content
+  toolCalls?: UIMessageToolCall[]  // tool invocations
+  stepIndex?: number         // which turn this belongs to
+  status?: 'pending' | 'streaming' | 'complete' | 'error'
+}
+```
+
+The hook runs your messages through a **reducer** that accumulates streaming
+text deltas, merges tool call results, and tracks message status.
+
+## Persisting sessions across page reloads
+
+Use `createEveSessionPersistence` to save and restore session state:
+
+```tsx
+import { useEveAgent, createEveSessionPersistence } from 'flue-eve/react'
+
+const persistence = createEveSessionPersistence({
+  storage: localStorage,
+  baseUrl: '/eve/v1',  // optional, defaults to '/eve/v1'
+  agent: 'assistant',   // optional
+})
+
+function Chat() {
+  const agent = useEveAgent(persistence)
+  // ...
+}
+```
+
+The hook automatically saves the session cursor (`sessionId`, `continuationToken`,
+`streamIndex`) to storage on every event. On next mount, it restores the session
+and replays from the saved index — the user sees their full conversation.
+
+## Human-in-the-loop (HITL)
+
+When the agent needs user input before continuing (e.g., an approval), the hook
+pauses the stream. `agent.ready` stays `true` and `agent.input.requested` is set:
+
+```tsx
+function Chat() {
+  const agent = useEveAgent(persistence)
+
+  if (agent.input?.requested) {
+    return (
+      <div>
+        <p>Agent needs input: {agent.input.requested.prompt}</p>
+        <button onClick={() => agent.send({ type: 'approve' })}>
+          Approve
+        </button>
+        <button onClick={() => agent.send({ type: 'reject' })}>
+          Reject
+        </button>
+      </div>
+    )
+  }
+
+  // Normal chat UI...
+}
+```
+
+The agent automatically resumes streaming once you call `send()` with a response.
+
+## Stopping a stream
+
+Call `agent.stop()` to abort the current turn:
+
+```tsx
+<button onClick={() => agent.stop()}>Stop</button>
+```
+
+The hook cleans up the stream, returns to `ready`, and the last message is
+marked with its currently accumulated content.
+
+## Error handling
+
+The hook surfaces non-recoverable errors through `agent.error`. Display this
+in your UI:
+
+```tsx
+if (agent.error) {
+  return <div className="error">Session failed: {agent.error.message}</div>
+}
+```
+
+Recoverable per-step failures (e.g., a single tool call failing) are surfaced
+inside the message's `toolCalls` array and do not set `agent.error`.
+
+## Full example
+
+```tsx
+import { useState } from 'react'
+import { useEveAgent, createEveSessionPersistence } from 'flue-eve/react'
+
+const persistence = createEveSessionPersistence({
+  storage: localStorage,
+})
+
+export default function Chat() {
+  const agent = useEveAgent(persistence)
+  const [input, setInput] = useState('')
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!input.trim()) return
+    agent.send(input)
+    setInput('')
+  }
+
+  if (agent.error) {
+    return (
+      <div className="error">
+        <p>Error: {agent.error.message}</p>
+        <button onClick={() => window.location.reload()}>Reload</button>
+      </div>
+    )
+  }
+
+  if (agent.input?.requested) {
+    return (
+      <div className="hitl">
+        <p>{agent.input.requested.prompt}</p>
+        <button onClick={() => agent.send("Approved")}>Approve</button>
+        <button onClick={() => agent.send("Denied")}>Deny</button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="chat">
+      <div className="messages">
+        {agent.messages.map((m) => (
+          <div key={m.id} className={`message ${m.role}`}>
+            <strong>{m.role}:</strong> {m.content}
+            {m.toolCalls?.map((tc) => (
+              <div key={tc.id} className="tool-call">
+                Tool: {tc.toolName}
+                {tc.result && <pre>{JSON.stringify(tc.result, null, 2)}</pre>}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      <form onSubmit={handleSend}>
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Type a message..."
+          disabled={!agent.ready}
+        />
+        <button type="submit" disabled={!agent.ready || !input.trim()}>
+          Send
+        </button>
+        <button type="button" onClick={() => agent.stop()} disabled={agent.ready}>
+          Stop
+        </button>
+      </form>
+    </div>
+  )
+}
+```
+
+See [React guide](/docs/guides/react) for advanced patterns including custom
+reducers and client context.

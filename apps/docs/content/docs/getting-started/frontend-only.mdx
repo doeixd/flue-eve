@@ -1,23 +1,69 @@
 ---
 title: Frontend only
-description: Use the client SDK without a flue-eve server
+description: Use the client SDK and React hook without a flue-eve server
 ---
 
 # Frontend only
 
-If you have an existing Eve-compatible server, you only need the client:
+If you have an existing Eve-compatible HTTP server or want to use `flue-eve`
+with an external backend, you only need the client and React packages.
+
+## Client SDK
 
 ```bash
 npm install flue-eve
 ```
 
 ```ts
-import { Client } from 'flue-eve/client';
+import { Client } from 'flue-eve/client'
 
 const client = new Client({
   baseUrl: 'https://your-server.com/eve/v1',
-});
+})
+
+const session = await client.createSession({ message: 'Hello!' })
+
+for await (const event of session.stream()) {
+  console.log(event)
+}
 ```
 
 All client methods — `createSession`, `send`, `stream`, `result` — work
 against any Eve-compatible HTTP server.
+
+## React hook
+
+```tsx
+import { useEveAgent, createEveSessionPersistence } from 'flue-eve/react'
+
+const persistence = createEveSessionPersistence({ storage: localStorage })
+const { messages, send, ready, stop } = useEveAgent(persistence)
+```
+
+Set `baseUrl` in the persistence options to point to your server:
+
+```tsx
+const persistence = createEveSessionPersistence({
+  storage: localStorage,
+  baseUrl: 'https://your-server.com/eve/v1',
+})
+```
+
+## Vite alias
+
+The Vite plugin auto-aliases `eve/client` → `flue-eve/client` and
+`eve/react` → `flue-eve/react`. If you use those imports, existing
+browser code works unchanged without the plugin installed.
+
+## Authentication
+
+For production, pass a bearer token:
+
+```ts
+const client = new Client({
+  baseUrl: 'https://your-server.com/eve/v1',
+  auth: { type: 'bearer', token: 'your-token' },
+})
+```
+
+See [deployment](/docs/deployment) for production setup.
