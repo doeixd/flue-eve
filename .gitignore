@@ -1,0 +1,20 @@
+# Vendor clones for local reference (see AGENTS.md)
+_vendor/
+
+# Environment and secrets
+.env
+.env.*
+
+# Dependencies and build output
+node_modules/
+dist/
+.turbo/
+.tmp/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
