@@ -1,15 +1,24 @@
 import { resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-
 import { defineConfig } from "vitest/config";
-
-const packageDir = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
   resolve: {
     alias: {
-      "@flue-eve/client": resolve(packageDir, "../client/src/index.ts"),
-      "@flue-eve/shared": resolve(packageDir, "../shared/src/index.ts"),
+      "@flue-eve/shared": resolve(import.meta.dirname!, "../shared/dist/index.js"),
+      "@flue-eve/connections/search": resolve(import.meta.dirname!, "../connections/dist/connection-search.js"),
+      "@flue-eve/connections/connect": resolve(import.meta.dirname!, "../connections/dist/connect.js"),
+      "@flue-eve/connections": resolve(import.meta.dirname!, "../connections/dist/index.js"),
+      "@flue-eve/workflows": resolve(import.meta.dirname!, "../workflows/dist/index.js"),
+      "@flue-eve/channels": resolve(import.meta.dirname!, "../channels/dist/index.js"),
+      "@flue-eve/vite/config": resolve(import.meta.dirname!, "../vite/dist/config.js"),
+      "@flue-eve/vite": resolve(import.meta.dirname!, "../vite/dist/index.js"),
+      "@flue-eve/sveltekit": resolve(import.meta.dirname!, "../sveltekit/dist/index.js"),
+      "@flue-eve/nuxt": resolve(import.meta.dirname!, "../nuxt/dist/index.js"),
+      "@flue-eve/compat-server/worker": resolve(import.meta.dirname!, "../compat-server/dist/eve-worker.js"),
+      "@flue-eve/compat-server": resolve(import.meta.dirname!, "../compat-server/dist/index.js"),
+      "@flue-eve/client": resolve(import.meta.dirname!, "../client/dist/index.js"),
+      "@flue-eve/nitro": resolve(import.meta.dirname!, "../nitro/dist/index.js"),
+      "@flue-eve/react": resolve(import.meta.dirname!, "../react/dist/index.js"),
     },
   },
   test: {
@@ -17,5 +26,6 @@ export default defineConfig({
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
     environment: "node",
     testTimeout: 15000,
+    server: { deps: { inline: [/@flue-eve/, "flue-eve"] } },
   },
 });

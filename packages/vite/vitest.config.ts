@@ -1,32 +1,30 @@
-import { fileURLToPath } from "node:url";
-
+import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
-
-const fromHere = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 export default defineConfig({
   resolve: {
-    alias: [
-      { find: "flue-eve/vite/config", replacement: fromHere("../flue-eve/src/vite-config.ts") },
-      { find: "flue-eve/client", replacement: fromHere("../flue-eve/src/client.ts") },
-      { find: "flue-eve/connections/search", replacement: fromHere("../flue-eve/src/connections-search.ts") },
-      { find: "flue-eve/connections", replacement: fromHere("../flue-eve/src/connections.ts") },
-      { find: "flue-eve/server", replacement: fromHere("../flue-eve/src/server.ts") },
-      { find: "flue-eve/vite", replacement: fromHere("../flue-eve/src/vite.ts") },
-      { find: "@flue-eve/client", replacement: fromHere("../client/src/index.ts") },
-      { find: "@flue-eve/compat-server", replacement: fromHere("../compat-server/src/index.ts") },
-      { find: "@flue-eve/connections/search", replacement: fromHere("../connections/src/connection-search.ts") },
-      { find: "@flue-eve/connections", replacement: fromHere("../connections/src/index.ts") },
-      { find: "@flue-eve/shared", replacement: fromHere("../shared/src/index.ts") },
-      { find: "@flue/runtime/internal", replacement: fromHere("../compat-server/node_modules/@flue/runtime/dist/internal.mjs") },
-      { find: "@flue/runtime", replacement: fromHere("../compat-server/node_modules/@flue/runtime/dist/index.mjs") },
-      { find: "hono/cors", replacement: fromHere("../compat-server/node_modules/hono/dist/middleware/cors/index.js") },
-      { find: "hono", replacement: fromHere("../compat-server/node_modules/hono/dist/index.js") },
-    ],
+    alias: {
+      "@flue-eve/shared": resolve(import.meta.dirname!, "../shared/dist/index.js"),
+      "@flue-eve/connections/search": resolve(import.meta.dirname!, "../connections/dist/connection-search.js"),
+      "@flue-eve/connections/connect": resolve(import.meta.dirname!, "../connections/dist/connect.js"),
+      "@flue-eve/connections": resolve(import.meta.dirname!, "../connections/dist/index.js"),
+      "@flue-eve/workflows": resolve(import.meta.dirname!, "../workflows/dist/index.js"),
+      "@flue-eve/channels": resolve(import.meta.dirname!, "../channels/dist/index.js"),
+      "@flue-eve/vite/config": resolve(import.meta.dirname!, "../vite/dist/config.js"),
+      "@flue-eve/vite": resolve(import.meta.dirname!, "../vite/dist/index.js"),
+      "@flue-eve/sveltekit": resolve(import.meta.dirname!, "../sveltekit/dist/index.js"),
+      "@flue-eve/nuxt": resolve(import.meta.dirname!, "../nuxt/dist/index.js"),
+      "@flue-eve/compat-server/worker": resolve(import.meta.dirname!, "../compat-server/dist/eve-worker.js"),
+      "@flue-eve/compat-server": resolve(import.meta.dirname!, "../compat-server/dist/index.js"),
+      "@flue-eve/client": resolve(import.meta.dirname!, "../client/dist/index.js"),
+      "@flue-eve/nitro": resolve(import.meta.dirname!, "../nitro/dist/index.js"),
+      "@flue-eve/react": resolve(import.meta.dirname!, "../react/dist/index.js"),
+    },
   },
   test: {
     name: "vite",
     include: ["src/**/*.test.ts"],
     environment: "node",
+    server: { deps: { inline: [/@flue-eve/, "flue-eve"] } },
   },
 });

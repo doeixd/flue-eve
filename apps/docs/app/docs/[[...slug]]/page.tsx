@@ -1,5 +1,6 @@
 import { source } from '@/lib/source';
 import { DocsPage, DocsBody } from 'fumadocs-ui/page';
+import { createRelativeLink } from 'fumadocs-ui/mdx';
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 
 export default async function DocPage({
@@ -19,7 +20,12 @@ export default async function DocPage({
   return (
     <DocsPage>
       <DocsBody>
-        <MDX components={defaultMdxComponents} />
+        <MDX
+          components={{
+            ...defaultMdxComponents,
+            a: createRelativeLink(source, page),
+          }}
+        />
       </DocsBody>
     </DocsPage>
   );

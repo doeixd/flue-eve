@@ -37,3 +37,8 @@ Thumbs.db
 
 # Terminal transcript artifacts (TUI)
 terminals/
+
+# Nuxt & SvelteKit build artifacts
+.nuxt/
+.output/
+.svelte-kit/

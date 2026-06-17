@@ -59,8 +59,8 @@ export function createEveChannelBridge(options: EveChannelOptions): Hono {
           "x-flue-eve-compat": COMPAT_API_VERSION,
         },
       );
-    } catch {
-      return c.json({ ok: false, error: "Channel dispatch failed" }, 500);
+    } catch (err: any) {
+      return c.json({ ok: false, error: err instanceof Error ? err.message : "Channel dispatch failed" }, 500);
     }
   });
 

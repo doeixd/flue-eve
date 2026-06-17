@@ -18,7 +18,7 @@ const module: any = defineNuxtModule<FlueEvePluginOptions>({
     spawnFlueDev: true,
   },
   setup(options, _nuxt) {
-    addVitePlugin(flueEve(options));
+    addVitePlugin(flueEve(options) as any);
   },
 });
 

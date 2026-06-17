@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { EveEvent } from "@flue-eve/shared";
 import {
+  EVE_SESSION_ID_HEADER,
   EVE_STREAM_FORMAT_HEADER,
   EVE_STREAM_VERSION_HEADER,
   EVE_MESSAGE_STREAM_CONTENT_TYPE,
@@ -14,6 +15,7 @@ function streamHeaders(runId: string): Record<string, string> {
   return {
     "content-type": EVE_MESSAGE_STREAM_CONTENT_TYPE,
     "x-eve-run-id": runId,
+    [EVE_SESSION_ID_HEADER]: runId,
     [EVE_STREAM_FORMAT_HEADER]: EVE_MESSAGE_STREAM_FORMAT,
     [EVE_STREAM_VERSION_HEADER]: EVE_MESSAGE_STREAM_VERSION,
     "cache-control": "no-store, no-transform",
@@ -38,8 +40,9 @@ export function createEveWorkflowApp(options: EveWorkflowOptions): Hono {
         "x-eve-run-id": runId,
         "x-flue-eve-compat": COMPAT_API_VERSION,
       });
-    } catch {
-      return c.json({ ok: false, error: "Workflow submission failed" }, 500);
+    } catch (err: any) {
+      const msg = err instanceof Error ? err.message : "unknown error";
+      return c.json({ ok: false, error: `Workflow submission failed: ${msg}` }, 500);
     }
   });
 
