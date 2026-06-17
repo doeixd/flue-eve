@@ -2,7 +2,7 @@
   "name": "@flue-eve/nitro",
   "version": "0.1.0",
   "type": "module",
-  "description": "Nitro integration for @flue-eve — Vite plugin + runtime plugin (M8g)",
+  "description": "Nitro integration for @flue-eve \u2014 Vite plugin + runtime plugin (M8g)",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -41,5 +41,7 @@
   },
   "engines": {
     "node": ">=22.19.0"
-  }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js"
 }

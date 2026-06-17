@@ -2,7 +2,7 @@
   "name": "@flue-eve/sveltekit",
   "version": "0.1.0",
   "type": "module",
-  "description": "SvelteKit integration for @flue-eve — Vite plugin wrapper (M8f)",
+  "description": "SvelteKit integration for @flue-eve \u2014 Vite plugin wrapper (M8f)",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -31,5 +31,7 @@
   },
   "engines": {
     "node": ">=22.19.0"
-  }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js"
 }

@@ -44,12 +44,14 @@
     "vitest": "^3.2.4"
   },
   "license": "MIT",
-  "description": "MCP → Eve connection shim, @vercel/connect bridge (M5)",
+  "description": "MCP \u2192 Eve connection shim, @vercel/connect bridge (M5)",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/doeixd/flue-eve.git"
   },
   "engines": {
     "node": ">=22.19.0"
-  }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js"
 }

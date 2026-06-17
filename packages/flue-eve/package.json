@@ -88,12 +88,14 @@
     "vitest": "^3.2.4"
   },
   "license": "MIT",
-  "description": "Aggregator package — re-exports all @flue-eve/* packages under a single namespace",
+  "description": "Aggregator package \u2014 re-exports all @flue-eve/* packages under a single namespace",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/doeixd/flue-eve.git"
   },
   "engines": {
     "node": ">=22.19.0"
-  }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js"
 }

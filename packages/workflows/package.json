@@ -2,7 +2,7 @@
   "name": "@flue-eve/workflows",
   "version": "0.1.0",
   "type": "module",
-  "description": "Flue workflow runs → Eve stream compatibility (M8e)",
+  "description": "Flue workflow runs \u2192 Eve stream compatibility (M8e)",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -40,5 +40,7 @@
   },
   "engines": {
     "node": ">=22.19.0"
-  }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js"
 }

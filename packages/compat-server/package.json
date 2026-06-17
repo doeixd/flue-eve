@@ -53,12 +53,14 @@
     "vitest": "^3.2.4"
   },
   "license": "MIT",
-  "description": "Hono middleware at /eve/v1/* — sessions, journal, mapper, NDJSON, auth",
+  "description": "Hono middleware at /eve/v1/* \u2014 sessions, journal, mapper, NDJSON, auth",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/doeixd/flue-eve.git"
   },
   "engines": {
     "node": ">=22.19.0"
-  }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js"
 }

@@ -33,12 +33,14 @@
     "vitest": "^3.2.4"
   },
   "license": "MIT",
-  "description": "Vite plugin — spawn/proxy flue dev, scaffold, aliases for @flue-eve",
+  "description": "Vite plugin \u2014 spawn/proxy flue dev, scaffold, aliases for @flue-eve",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/doeixd/flue-eve.git"
   },
   "engines": {
     "node": ">=22.19.0"
-  }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js"
 }

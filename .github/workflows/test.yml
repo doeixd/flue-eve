@@ -28,7 +28,7 @@ jobs:
         run: vp test
 
       - name: Build
-        run: vp exec -- pnpm -r run build
+        run: vp exec -- pnpm --filter "./packages/*" run build
 
       - name: Build docs (no deploy)
         run: vp exec -- pnpm --filter @flue-eve/docs build
@@ -52,7 +52,7 @@ jobs:
         run: vp install
 
       - name: Build
-        run: vp exec -- pnpm -r run build
+        run: vp exec -- pnpm --filter "./packages/*" run build
 
       - name: Cloudflare Worker smoke
         run: vp exec -- node scripts/smoke-cloudflare-ci.mjs

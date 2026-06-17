@@ -2,7 +2,7 @@
   "name": "@flue-eve/nuxt",
   "version": "0.1.0",
   "type": "module",
-  "description": "Nuxt integration for @flue-eve — module wrapper (M8f)",
+  "description": "Nuxt integration for @flue-eve \u2014 module wrapper (M8f)",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -33,5 +33,7 @@
   },
   "engines": {
     "node": ">=22.19.0"
-  }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js"
 }
