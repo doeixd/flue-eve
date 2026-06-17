@@ -343,23 +343,23 @@ importers:
   packages/flue-eve:
     dependencies:
       '@flue-eve/client':
-        specifier: workspace:*
-        version: link:../client
+        specifier: 0.1.0
+        version: 0.1.0(eve@0.11.3(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.65.2(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(svelte@5.56.3)(typescript@5.9.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(ai@7.0.0-beta.178(zod@4.4.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.11.1)(jiti@2.7.0)(just-bash@3.0.1)(lru-cache@11.5.1)(miniflare@4.20260616.0)(next@16.2.9(@opentelemetry/api@1.9.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(rollup@4.62.0)(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.38(typescript@5.9.3))(wrangler@4.101.0(@cloudflare/workers-types@4.20260617.1)))
       '@flue-eve/compat-server':
-        specifier: workspace:*
-        version: link:../compat-server
+        specifier: 0.1.0
+        version: 0.1.0(dossfwc7nf7ba35dqi37aj45di)
       '@flue-eve/connections':
-        specifier: workspace:*
-        version: link:../connections
+        specifier: 0.1.0
+        version: 0.1.0(6ehgd5id6nif5lmjjeu7b4ge5a)
       '@flue-eve/react':
-        specifier: workspace:*
-        version: link:../react
+        specifier: 0.1.0
+        version: 0.1.0(eve@0.11.3(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.65.2(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(svelte@5.56.3)(typescript@5.9.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(ai@7.0.0-beta.178(zod@4.4.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.11.1)(jiti@2.7.0)(just-bash@3.0.1)(lru-cache@11.5.1)(miniflare@4.20260616.0)(next@16.2.9(@opentelemetry/api@1.9.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(rollup@4.62.0)(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.38(typescript@5.9.3))(wrangler@4.101.0(@cloudflare/workers-types@4.20260617.1)))(react@19.2.7)
       '@flue-eve/shared':
-        specifier: workspace:*
-        version: link:../shared
+        specifier: 0.1.0
+        version: 0.1.0
       '@flue-eve/vite':
-        specifier: workspace:*
-        version: link:../vite
+        specifier: 0.1.2
+        version: 0.1.2(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))
       '@flue/runtime':
         specifier: '*'
         version: 1.0.0-beta.1(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(typebox@1.1.38)(typescript@5.9.3)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@4.4.3))(zod@4.4.3)
@@ -1569,6 +1569,62 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
+
+  '@flue-eve/client@0.1.0':
+    resolution: {integrity: sha512-eSWRQtdFcrdctAsmIumLejC5O5TAGSYP/HuOgP3YJZWn9G0rPj8XvNFdIUi99LeBc6uSbABNEPK10BlSsfdYCQ==}
+    engines: {node: '>=22.19.0'}
+    peerDependencies:
+      eve: ^0.11.0
+    peerDependenciesMeta:
+      eve:
+        optional: true
+
+  '@flue-eve/compat-server@0.1.0':
+    resolution: {integrity: sha512-z4z7o6rPDlN1gB+1tO0FHJiWFJ9lL4PuknHruFhaGd5fGDl5OL+sQ0yAIJvo+F7ddMK1nMAgqlL2BGgLAEgp9A==}
+    engines: {node: '>=22.19.0'}
+    peerDependencies:
+      '@flue/runtime': '*'
+      '@opentelemetry/api': ^1.0.0
+      ioredis: '*'
+    peerDependenciesMeta:
+      '@flue/runtime':
+        optional: true
+      '@opentelemetry/api':
+        optional: true
+      ioredis:
+        optional: true
+
+  '@flue-eve/connections@0.1.0':
+    resolution: {integrity: sha512-jdGVEJ2x44/e4zNDwm6ZilCcOIJBgA47C1d1NyZsbv9nuIk68Aj4wlybF9YHxSkb19Q71J5pgWzLmw+XB8Qe1A==}
+    engines: {node: '>=22.19.0'}
+    peerDependencies:
+      '@flue/runtime': '*'
+      '@vercel/connect': '*'
+    peerDependenciesMeta:
+      '@flue/runtime':
+        optional: true
+      '@vercel/connect':
+        optional: true
+
+  '@flue-eve/react@0.1.0':
+    resolution: {integrity: sha512-1bl3kgPDloxQLBDG0P1L4pzzBiyi3Q8rz3ZjbC5y2tMOYz8DuWyHL1jZAhbu3qmPZ6cSxQm35xEP11IF9L5u/A==}
+    engines: {node: '>=22.19.0'}
+    peerDependencies:
+      eve: ^0.11.0
+      react: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      eve:
+        optional: true
+
+  '@flue-eve/shared@0.1.0':
+    resolution: {integrity: sha512-meGcNbMGj1i4h94RhcSljvKZL5d+T++YNZg8BQadLLY2Uyu+/0dU7EAzT+BO4g5xA5x63oCVZZHZJ/sZCjsytQ==}
+    engines: {node: '>=22.19.0'}
+
+  '@flue-eve/vite@0.1.2':
+    resolution: {integrity: sha512-A6DHwRIW4FhmjQpX3rexrb3k9cl6DoJbH1v0rSuSE2QL8RjiRh1Hj5zMTeW7sNq5i0MXHNNGIcVOstNqC3iyBA==}
+    engines: {node: '>=22.19.0'}
+    peerDependencies:
+      vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
 
   '@flue/cli@1.0.0-beta.1':
     resolution: {integrity: sha512-XbSsn7Nl2/J80Y+7Ph7tLF0Y3+doVdBXD8rPikuaMeq4mhHYSn5DjOwgXS2+TdzKcpOKyNVwttORyoVAjWdbtA==}
@@ -9168,6 +9224,48 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
 
   '@floating-ui/utils@0.2.11': {}
+
+  '@flue-eve/client@0.1.0(eve@0.11.3(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.65.2(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(svelte@5.56.3)(typescript@5.9.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(ai@7.0.0-beta.178(zod@4.4.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.11.1)(jiti@2.7.0)(just-bash@3.0.1)(lru-cache@11.5.1)(miniflare@4.20260616.0)(next@16.2.9(@opentelemetry/api@1.9.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(rollup@4.62.0)(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.38(typescript@5.9.3))(wrangler@4.101.0(@cloudflare/workers-types@4.20260617.1)))':
+    dependencies:
+      '@flue-eve/shared': 0.1.0
+    optionalDependencies:
+      eve: 0.11.3(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.65.2(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(svelte@5.56.3)(typescript@5.9.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(ai@7.0.0-beta.178(zod@4.4.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.11.1)(jiti@2.7.0)(just-bash@3.0.1)(lru-cache@11.5.1)(miniflare@4.20260616.0)(next@16.2.9(@opentelemetry/api@1.9.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(rollup@4.62.0)(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.38(typescript@5.9.3))(wrangler@4.101.0(@cloudflare/workers-types@4.20260617.1))
+
+  '@flue-eve/compat-server@0.1.0(dossfwc7nf7ba35dqi37aj45di)':
+    dependencies:
+      '@durable-streams/client': 0.2.6
+      '@flue-eve/connections': 0.1.0(6ehgd5id6nif5lmjjeu7b4ge5a)
+      '@flue-eve/shared': 0.1.0
+      hono: 4.12.25
+    optionalDependencies:
+      '@flue/runtime': 1.0.0-beta.1(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(typebox@1.1.38)(typescript@5.9.3)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@4.4.3))(zod@4.4.3)
+      '@opentelemetry/api': 1.9.1
+      ioredis: 5.11.1
+    transitivePeerDependencies:
+      - '@vercel/connect'
+
+  '@flue-eve/connections@0.1.0(6ehgd5id6nif5lmjjeu7b4ge5a)':
+    dependencies:
+      '@flue-eve/shared': 0.1.0
+    optionalDependencies:
+      '@flue/runtime': 1.0.0-beta.1(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(typebox@1.1.38)(typescript@5.9.3)(ws@8.21.0)(zod-to-json-schema@3.25.2(zod@4.4.3))(zod@4.4.3)
+      '@vercel/connect': 0.2.4(ai@7.0.0-beta.178(zod@4.4.3))(eve@0.11.3(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.65.2(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(svelte@5.56.3)(typescript@5.9.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(ai@7.0.0-beta.178(zod@4.4.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.11.1)(jiti@2.7.0)(just-bash@3.0.1)(lru-cache@11.5.1)(miniflare@4.20260616.0)(next@16.2.9(@opentelemetry/api@1.9.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(rollup@4.62.0)(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.38(typescript@5.9.3))(wrangler@4.101.0(@cloudflare/workers-types@4.20260617.1)))
+
+  '@flue-eve/react@0.1.0(eve@0.11.3(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.65.2(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(svelte@5.56.3)(typescript@5.9.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(ai@7.0.0-beta.178(zod@4.4.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.11.1)(jiti@2.7.0)(just-bash@3.0.1)(lru-cache@11.5.1)(miniflare@4.20260616.0)(next@16.2.9(@opentelemetry/api@1.9.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(rollup@4.62.0)(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.38(typescript@5.9.3))(wrangler@4.101.0(@cloudflare/workers-types@4.20260617.1)))(react@19.2.7)':
+    dependencies:
+      '@flue-eve/client': 0.1.0(eve@0.11.3(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.65.2(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(svelte@5.56.3)(typescript@5.9.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(ai@7.0.0-beta.178(zod@4.4.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.11.1)(jiti@2.7.0)(just-bash@3.0.1)(lru-cache@11.5.1)(miniflare@4.20260616.0)(next@16.2.9(@opentelemetry/api@1.9.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(rollup@4.62.0)(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.38(typescript@5.9.3))(wrangler@4.101.0(@cloudflare/workers-types@4.20260617.1)))
+      '@flue-eve/shared': 0.1.0
+      react: 19.2.7
+    optionalDependencies:
+      eve: 0.11.3(@opentelemetry/api@1.9.1)(@sveltejs/kit@2.65.2(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@5.1.1(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(svelte@5.56.3)(typescript@5.9.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)))(ai@7.0.0-beta.178(zod@4.4.3))(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.11.1)(jiti@2.7.0)(just-bash@3.0.1)(lru-cache@11.5.1)(miniflare@4.20260616.0)(next@16.2.9(@opentelemetry/api@1.9.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react@19.2.7)(rollup@4.62.0)(svelte@5.56.3)(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))(vue@3.5.38(typescript@5.9.3))(wrangler@4.101.0(@cloudflare/workers-types@4.20260617.1))
+
+  '@flue-eve/shared@0.1.0': {}
+
+  '@flue-eve/vite@0.1.2(vite@6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0))':
+    dependencies:
+      '@flue-eve/shared': 0.1.0
+      esbuild: 0.25.12
+      vite: 6.4.3(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
 
   '@flue/cli@1.0.0-beta.1(@standard-schema/spec@1.1.0)(@types/json-schema@7.0.15)(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(typebox@1.1.38)(typescript@5.9.3)(workerd@1.20260616.1)(wrangler@4.101.0(@cloudflare/workers-types@4.20260617.1))(ws@8.21.0)(yaml@2.9.0)(zod-to-json-schema@3.25.2(zod@4.4.3))(zod@4.4.3)':
     dependencies:
