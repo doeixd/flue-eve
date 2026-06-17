@@ -1,5 +1,6 @@
 import { source } from '@/lib/source';
 import { DocsPage, DocsBody } from 'fumadocs-ui/page';
+import defaultMdxComponents from 'fumadocs-ui/mdx';
 
 export default async function DocPage({
   params,
@@ -18,7 +19,7 @@ export default async function DocPage({
   return (
     <DocsPage>
       <DocsBody>
-        <MDX />
+        <MDX components={defaultMdxComponents} />
       </DocsBody>
     </DocsPage>
   );

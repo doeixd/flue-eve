@@ -5,9 +5,9 @@
 
 # flue-eve
 
-Eve.dev API surface (`/eve/v1/*`, `flue-eve/client`, `useEveAgent`) powered by [Flue](https://flueframework.com) (`@flue/runtime`), integrated via a Vite plugin.
+Eve.dev API surface (`/eve/v1/*`, `flue-eve/client`, `useEveAgent`) powered by [Flue](https://flueframework.com) (`@flue/runtime`) runtime, integrated via a Vite plugin.
 
-> Reuse Eve's frontend contract and developer ergonomics; run agents on Flue's harness and deploy anywhere Flue supports.
+> Reuse [Eve](https://eve.dev)'s frontend contract and developer ergonomics; run agents on [Flue](https://flueframework.com)'s harness and deploy anywhere Flue supports.
 
 ## Quick start
 
