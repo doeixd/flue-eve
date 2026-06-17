@@ -103,7 +103,7 @@ Implications:
 4. No server routes — remove or stub anything under `app/api/*` (use static search indexes only).
 5. Repo **Settings → Pages → Source: GitHub Actions** (not `gh-pages` branch).
 
-**Decision D-D1 (required before scaffold):** Confirm GitHub repo name — it becomes the URL segment (`flue-eve-vite` → `/flue-eve-vite/`).
+**Decision D-D1 (required before scaffold):** Confirm GitHub repo name — it becomes the URL segment (`flue-eve` → `/flue-eve/`).
 
 **Decision D-D2 (optional):** Custom domain later (`docs.example.com`) — plan for `CNAME` + drop `basePath` when switching.
 
@@ -599,7 +599,7 @@ PR 4 can land as soon as scaffold builds; content PRs parallelize after PR 1.
 
 | ID | Question | Default if no answer |
 |----|----------|----------------------|
-| D-D1 | GitHub repo name for `basePath`? | `flue-eve-vite` |
+| D-D1 | GitHub repo name for `basePath`? | `flue-eve` |
 | D-D2 | Custom domain? | No — project pages first |
 | D-D3 | Docs package name `@flue-eve/docs` vs `apps/docs` private? | `@flue-eve/docs` private |
 | D-D4 | Include `llms.txt` / `llms-full.txt` routes? | Yes — cheap, helps agents |
@@ -629,7 +629,7 @@ Run Phase D0: scaffold `apps/docs` with Fumadocs, confirm `pnpm build:docs` prod
 # after scaffold exists
 vp install
 pnpm dev:docs
-NEXT_PUBLIC_BASE_PATH=/flue-eve-vite pnpm build:docs
+NEXT_PUBLIC_BASE_PATH=/flue-eve pnpm build:docs
 ```
 
 ---
