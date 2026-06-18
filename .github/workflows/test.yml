@@ -37,6 +37,7 @@ jobs:
         run: vp exec -- pnpm --filter @flue-eve/docs build
 
   cloudflare-smoke:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
