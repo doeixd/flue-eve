@@ -9,6 +9,8 @@ description: Pick the fastest path for a new app, an Eve migration, or a client 
 
 - A browser-facing Eve contract: `/eve/v1/*`, NDJSON streams, `Client`, and
   `useEveAgent`.
+- An Eve-style authoring surface: `agent/instructions.md`, `agent/tools/*`, and
+  `agent/connections/*` scaffolded into Flue runtime files.
 - A Flue backend: the agent runtime that owns models, tools, durability, and
   deployment.
 
@@ -26,8 +28,8 @@ matches the code you already have.
 
 | Path | Use it when | Result |
 |------|-------------|--------|
-| [New project](/docs/getting-started/new-project) | You want a Vite + React app | Same-origin `/eve/v1/*`, React UI, Flue agent |
-| [From Eve](/docs/getting-started/from-eve) | You already have Eve code | Aliased client/hook imports and Flue-backed server |
+| [New project](/docs/getting-started/new-project) | You want Eve-style authoring plus a Vite + React app | `agent/` files, same-origin `/eve/v1/*`, React UI, Flue runtime |
+| [From Eve](/docs/getting-started/from-eve) | You already have Eve code | Eve-style files and aliased client/hook imports backed by Flue |
 | [Frontend only](/docs/getting-started/frontend-only) | The server already exists | Browser code talks to a remote compat server |
 | [React](/docs/getting-started/react) | You are building a chat UI | `useEveAgent` with streaming state |
 | [Client](/docs/getting-started/client) | You are writing scripts or tests | `Client` and `ClientSession` over HTTP |

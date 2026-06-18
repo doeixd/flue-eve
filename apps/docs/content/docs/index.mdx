@@ -8,13 +8,14 @@ description: Eve-compatible client, React, and HTTP APIs running on Flue
 `flue-eve` is an adapter that lets apps written for [Eve](https://eve.dev)'s
 browser-facing API run against a [Flue](https://flueframework.com) backend.
 
-In practical terms: your UI can keep using Eve-style `/eve/v1/*` routes,
-NDJSON streams, `Client`, and `useEveAgent`, while your agent actually runs on
-Flue's open runtime.
+In practical terms: you keep the Eve authoring and frontend experience —
+`agent/instructions.md`, `agent/tools/*`, `/eve/v1/*`, NDJSON streams,
+`Client`, and `useEveAgent` — while your agent actually runs on Flue's open
+runtime.
 
-It exists for teams that like Eve's frontend contract and developer ergonomics
-but want runtime control: normal Flue agents, Flue tools, Flue deployment
-targets, and no dependency on Eve's hosted/runtime layer.
+It exists for teams that like Eve's file-based agent authoring and browser
+ergonomics but want runtime control: normal Flue agents, Flue tools, Flue
+deployment targets, and no dependency on Eve's hosted/runtime layer.
 
 ## How to think about it
 
@@ -29,6 +30,8 @@ translation layer between the two:
 
 ## What stays familiar
 
+- Eve-style agent files: `agent/instructions.md`, `agent/tools/*`, and
+  `agent/connections/*`.
 - `GET /eve/v1/health`, `POST /eve/v1/session`, and session streams.
 - `Client` and `ClientSession` from `eve/client`-compatible imports.
 - `useEveAgent` with session state, reducer output, reconnects, and HITL events.

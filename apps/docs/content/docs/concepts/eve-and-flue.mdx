@@ -5,21 +5,23 @@ description: How Eve and Flue relate in flue-eve — what each provides and how 
 
 # Eve and Flue
 
-flue-eve is not a fork of either project. It's a bridge that translates between
-Eve's frontend contract and Flue's open runtime.
+flue-eve is not a fork of either project. It's a bridge that preserves Eve's
+file-based authoring and browser contract while running agents on Flue's open
+runtime.
 
-## What Eve provides (the contract)
+## What Eve provides (the authoring and browser contract)
 
-Eve defines a **frontend developer experience**:
+Eve defines a **developer experience**:
 
+- A filesystem-based agent authoring model (`agent/instructions.md`, `agent/tools/`)
 - HTTP routes at `/eve/v1/health`, `/eve/v1/session`, `/eve/v1/session/:id/stream`
 - An NDJSON event stream with `sessionId`, `continuationToken`, and `streamIndex`
 - Client SDKs (`eve/client`) and React hooks (`useEveAgent`)
-- A filesystem-based agent authoring model (`agent/instructions.md`, `agent/tools/`)
 
 Eve's contract is stable and well-documented. flue-eve implements this contract
 exactly — the same routes, the same event shapes, the same client API — but
-**translates to Flue** at runtime.
+**translates to Flue** at runtime. For file authoring, `npx flue-eve init`
+imports Eve-style declarations into Flue runtime files.
 
 ## What Flue provides (the runtime)
 
@@ -81,7 +83,8 @@ The compat-server:
 ## When to use flue-eve vs Flue directly
 
 Use **flue-eve** when:
-- You want the Eve HTTP/client contract without the Eve runtime
+- You want Eve-style `agent/` file authoring without the Eve runtime
+- You want the Eve HTTP/client contract and React hook
 - You're migrating from Eve and want your frontend to keep working
 - You want to deploy on non-Vercel platforms with Eve-shaped APIs
 - You want the `useEveAgent` hook and Eve client SDK
