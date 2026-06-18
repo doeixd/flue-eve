@@ -232,7 +232,8 @@ Supported:
 Not a goal for v1:
 
 - Reimplementing the Eve runtime
-- Full Eve filesystem auto-discovery as the runtime source of truth
+- Eve's runtime loader as the source of truth; Eve-style `agent/` files are
+  supported through `npx flue-eve init` scaffold/import
 - Eve platform channels such as Slack or Discord
 - Exposing Flue stream internals to Eve clients
 

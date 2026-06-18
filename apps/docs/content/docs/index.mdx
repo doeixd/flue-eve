@@ -37,7 +37,8 @@ translation layer between the two:
 
 ## What changes
 
-- Agents are authored as Flue agents, not as a full Eve filesystem runtime.
+- You can author with Eve-style `agent/` files or Flue-native agents. Eve-style
+  files are imported by the scaffold into Flue runtime files.
 - The Vite plugin wires development: aliases, proxying, sidecar scaffold, and
   the `flue dev` integration.
 - `@flue-eve/compat-server` translates at runtime and owns the Eve event journal.

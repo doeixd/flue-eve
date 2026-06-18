@@ -8,7 +8,8 @@ description: Move Eve browser and HTTP integrations onto a Flue-backed runtime
 The safest migration starts by separating the Eve surface from the Eve runtime.
 Browser and client code usually move first because `eve/client` and `eve/react`
 map directly to `flue-eve/client` and `flue-eve/react`. Server-side agent
-authoring then moves into Flue agents and tools.
+authoring can keep the familiar Eve-style `agent/` file layout; the scaffold
+imports those declarations into Flue agents and tools.
 
 ## What usually stays unchanged
 
@@ -131,8 +132,9 @@ FLUE_BASE_URL=http://127.0.0.1:3583 pnpm dev
 
 ## What to review manually
 
-- Eve filesystem discovery: Flue owns runtime discovery, so generated files
-  should be reviewed instead of relying on Eve's `agent/` auto-load semantics.
+- Eve filesystem discovery: `agent/instructions.md`, `agent/tools/*`, and
+  `agent/connections/*` are supported through scaffold/import. Flue still owns
+  runtime discovery, so review generated files when you change the layout.
 - Platform channels: use Flue channel integrations or `@flue-eve/channels`
   instead of assuming Eve Slack/Discord channels are present.
 - Production auth: the compat server fails closed unless `auth: 'none'` is
