@@ -1,6 +1,6 @@
 {
   "name": "flue-eve",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "exports": {
     ".": {
@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@flue-eve/client": "0.1.0",
-    "@flue-eve/compat-server": "0.1.0",
+    "@flue-eve/compat-server": "workspace:^",
     "@flue-eve/connections": "0.1.0",
     "@flue-eve/react": "0.1.0",
     "@flue-eve/shared": "0.1.0",

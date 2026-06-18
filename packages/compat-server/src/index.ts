@@ -1,4 +1,10 @@
-export { eveCompat, createEveCompatApp } from "./eve-compat.js";
+export {
+  eveCompat,
+  createEveCompatApp,
+  createEveWebHandler,
+  createEveWebMiddleware,
+  type EveWebHandler,
+} from "./eve-compat.js";
 export { createEveWorkerApp, resolveWorkerAdmission, type EveWorkerBindings, type EveWorkerOptions } from "./eve-worker.js";
 export { createMockAdmission } from "./admission/mock.js";
 export { createHitlMockAdmission } from "./admission/hitl-mock.js";

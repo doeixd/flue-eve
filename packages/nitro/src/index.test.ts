@@ -6,7 +6,7 @@ vi.mock("h3", () => ({
 }));
 
 vi.mock("@flue-eve/compat-server", () => ({
-  createEveCompatApp: vi.fn(),
+  createEveWebHandler: vi.fn(),
   resolveAdmission: vi.fn(),
 }));
 
@@ -71,19 +71,19 @@ describe("runtime plugin", () => {
   });
 
   it("mounts eveCompat on h3App.use with default env", async () => {
-    const { createEveCompatApp, resolveAdmission } = await import("@flue-eve/compat-server");
+    const { createEveWebHandler, resolveAdmission } = await import("@flue-eve/compat-server");
     const { fromWebHandler } = await import("h3");
-    vi.mocked(createEveCompatApp).mockReturnValue({ fetch: vi.fn() } as any);
+    vi.mocked(createEveWebHandler).mockReturnValue(vi.fn() as any);
     vi.mocked(resolveAdmission).mockReturnValue({} as any);
 
     const mod = await import("./runtime-plugin.js");
     mod.default(mockNitroApp());
 
     expect(resolveAdmission).toHaveBeenCalledWith({ agentName: "assistant" });
-    expect(createEveCompatApp).toHaveBeenCalledWith({
+    expect(createEveWebHandler).toHaveBeenCalledWith({
       agentName: "assistant",
       admission: {},
-    });
+    }, { mount: "/" });
     expect(fromWebHandler).toHaveBeenCalledOnce();
   });
 
@@ -91,8 +91,8 @@ describe("runtime plugin", () => {
     process.env.FLUE_AGENT_NAME = "env-agent";
     process.env.FLUE_EVE_MOUNT = "/custom/eve";
 
-    const { createEveCompatApp, resolveAdmission } = await import("@flue-eve/compat-server");
-    vi.mocked(createEveCompatApp).mockReturnValue({ fetch: vi.fn() } as any);
+    const { createEveWebHandler, resolveAdmission } = await import("@flue-eve/compat-server");
+    vi.mocked(createEveWebHandler).mockReturnValue(vi.fn() as any);
     vi.mocked(resolveAdmission).mockReturnValue({} as any);
 
     const mod = await import("./runtime-plugin.js");
@@ -100,25 +100,25 @@ describe("runtime plugin", () => {
     mod.default(nitroApp);
 
     expect(resolveAdmission).toHaveBeenCalledWith({ agentName: "env-agent" });
-    expect(createEveCompatApp).toHaveBeenCalledWith({
+    expect(createEveWebHandler).toHaveBeenCalledWith({
       agentName: "env-agent",
       admission: {},
-    });
+    }, { mount: "/" });
     expect(nitroApp.h3App.use).toHaveBeenCalledWith("/custom/eve", expect.any(Function));
 
     delete process.env.FLUE_AGENT_NAME;
     delete process.env.FLUE_EVE_MOUNT;
   });
 
-  it("fromWebHandler callback delegates to Hono fetch", async () => {
-    const { createEveCompatApp, resolveAdmission } = await import("@flue-eve/compat-server");
+  it("passes the web-standard handler to fromWebHandler", async () => {
+    const { createEveWebHandler, resolveAdmission } = await import("@flue-eve/compat-server");
     const { fromWebHandler } = await import("h3");
 
-    const mockFetch = vi.fn(async () => new Response(
+    const handler = vi.fn(async () => new Response(
       '{"ok":true}',
       { status: 200, headers: { "content-type": "application/json" } },
     ));
-    vi.mocked(createEveCompatApp).mockReturnValue({ fetch: mockFetch } as any);
+    vi.mocked(createEveWebHandler).mockReturnValue(handler as any);
     vi.mocked(resolveAdmission).mockReturnValue({} as any);
 
     const mod = await import("./runtime-plugin.js");
@@ -132,16 +132,16 @@ describe("runtime plugin", () => {
     const req = new Request("http://localhost/eve/v1/health");
     const result = await rawCallback(req);
 
-    expect(mockFetch).toHaveBeenCalledTimes(1);
-    const callArg = mockFetch.mock.calls[0]![0]! as Request;
+    expect(handler).toHaveBeenCalledTimes(1);
+    const callArg = handler.mock.calls[0]![0]! as Request;
     expect(callArg.url).toBe("http://localhost/eve/v1/health");
     expect(result).toBeInstanceOf(Response);
     expect(await result.json()).toEqual({ ok: true });
   });
 
   it("registers route at h3App level for catch-all matching", async () => {
-    const { createEveCompatApp, resolveAdmission } = await import("@flue-eve/compat-server");
-    vi.mocked(createEveCompatApp).mockReturnValue({ fetch: vi.fn() } as any);
+    const { createEveWebHandler, resolveAdmission } = await import("@flue-eve/compat-server");
+    vi.mocked(createEveWebHandler).mockReturnValue(vi.fn() as any);
     vi.mocked(resolveAdmission).mockReturnValue({} as any);
 
     const mod = await import("./runtime-plugin.js");

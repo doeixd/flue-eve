@@ -38,6 +38,8 @@ describe("flue-eve package boundaries", () => {
   it("M8-3: server subpath imports without React or Vite", async () => {
     const mod = await import("flue-eve/server");
     expect(mod.eveCompat).toBeTypeOf("function");
+    expect(mod.createEveWebHandler).toBeTypeOf("function");
+    expect(mod.createEveWebMiddleware).toBeTypeOf("function");
     expect(mod.createInProcessAdmission).toBeTypeOf("function");
     expect(mod.resolveAdmissionFromRuntime).toBeTypeOf("function");
   });

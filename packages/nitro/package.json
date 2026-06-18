@@ -1,6 +1,6 @@
 {
   "name": "@flue-eve/nitro",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Nitro integration for @flue-eve \u2014 Vite plugin + runtime plugin (M8g)",
   "exports": {

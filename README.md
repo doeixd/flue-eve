@@ -252,7 +252,7 @@ The public `flue-eve` package exposes the main subpaths:
 | `flue-eve/client` | Eve-compatible TypeScript client |
 | `flue-eve/react` | `useEveAgent` and session persistence helper |
 | `flue-eve/vite` | Vite plugin |
-| `flue-eve/server` | Hono compat server middleware |
+| `flue-eve/server` | Web-standard compat handler plus Hono helpers |
 | `flue-eve/server/worker` | Cloudflare Worker app helpers |
 | `flue-eve/connections` | MCP / connection shim |
 | `flue-eve/connections/search` | `connection__search` support |

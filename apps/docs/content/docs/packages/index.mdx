@@ -20,7 +20,7 @@ npm install flue-eve
 | `flue-eve/react` | `@flue-eve/react` | `useEveAgent` React hook |
 | `flue-eve/vite` | `@flue-eve/vite` | Vite plugin |
 | `flue-eve/vite/config` | `@flue-eve/vite/config` | `eve.config.ts` helpers |
-| `flue-eve/server` | `@flue-eve/compat-server` | Hono middleware |
+| `flue-eve/server` | `@flue-eve/compat-server` | Web-standard handler + Hono helpers |
 | `flue-eve/server/worker` | `@flue-eve/compat-server/worker` | Cloudflare Worker entry |
 | `flue-eve/connections` | `@flue-eve/connections` | MCP connection shim |
 | `flue-eve/connections/search` | `@flue-eve/connections/search` | Connection search |
@@ -34,7 +34,7 @@ control:
 | Package | Purpose |
 |---------|---------|
 | `@flue-eve/shared` | Event types, stream constants, factories |
-| `@flue-eve/compat-server` | Hono middleware — journal, mapper, tokens, auth |
+| `@flue-eve/compat-server` | Web-standard server handler — journal, mapper, tokens, auth |
 | `@flue-eve/client` | Drop-in `eve/client` replacement |
 | `@flue-eve/react` | Drop-in `useEveAgent` replacement |
 | `@flue-eve/vite` | Vite plugin — proxy, scaffold, aliases |

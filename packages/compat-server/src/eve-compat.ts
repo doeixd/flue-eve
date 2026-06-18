@@ -19,6 +19,8 @@ import { runTurn } from "./turn-runner.js";
 import type { EveCompatOptions, EveResolvedAgentConfig } from "./types.js";
 import { wrapAdmission } from "./otel.js";
 
+export type EveWebHandler = (request: Request) => Promise<Response>;
+
 function resolveAgents(options: EveCompatOptions, fallbackModelId: string): readonly EveResolvedAgentConfig[] {
   const configured = options.agents?.length
     ? options.agents
@@ -304,6 +306,29 @@ export function createEveCompatApp(options: EveCompatOptions & { readonly mount?
   root.route(mount, eveCompat(options));
   return root;
 }
+
+/**
+ * Web-standard handler for runtimes and frameworks that speak `Request`/`Response`.
+ *
+ * Examples:
+ *   - Hono: `app.mount("/eve/v1", createEveWebHandler({ ... }, { mount: "/" }))`
+ *   - h3/Nitro: `h3App.use("/eve/v1", fromWebHandler(createEveWebHandler({ ... }, { mount: "/" })))`
+ *   - Workers: `fetch: createEveWebHandler({ ... })`
+ */
+export function createEveWebHandler(
+  options: EveCompatOptions,
+  handlerOptions: { readonly mount?: string } = {},
+): EveWebHandler {
+  const app = createEveCompatApp({
+    ...options,
+    mount: handlerOptions.mount ?? "/eve/v1",
+  });
+
+  return async (request) => app.fetch(request);
+}
+
+/** Alias for integrations that call web-standard handlers "middleware". */
+export const createEveWebMiddleware = createEveWebHandler;
 
 function normalizeMount(mount: string): string {
   const trimmed = mount.endsWith("/") ? mount.slice(0, -1) : mount;

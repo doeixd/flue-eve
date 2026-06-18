@@ -6,8 +6,45 @@ description: "@flue-eve/compat-server usage"
 # Server
 
 ```ts
-import { eveCompat, createEveCompatApp } from '@flue-eve/compat-server';
+import {
+  createEveWebHandler,
+  createEveWebMiddleware,
+  eveCompat,
+  createEveCompatApp,
+} from '@flue-eve/compat-server';
 ```
+
+## createEveWebHandler
+
+Web-standard `Request` → `Response` handler. Use this for Hono `mount`, h3,
+Nitro, Workers, or any runtime that accepts web fetch handlers:
+
+```ts
+import { createEveWebHandler } from '@flue-eve/compat-server';
+
+export const handler = createEveWebHandler({
+  agentName: 'assistant',
+});
+
+export default {
+  fetch: handler,
+};
+```
+
+When a framework already mounts the handler at `/eve/v1`, make the handler
+mount-relative:
+
+```ts
+import { fromWebHandler } from 'h3';
+import { createEveWebHandler } from '@flue-eve/compat-server';
+
+h3App.use('/eve/v1', fromWebHandler(
+  createEveWebHandler({ agentName: 'assistant' }, { mount: '/' }),
+));
+```
+
+`createEveWebMiddleware` is an alias with the same signature for frameworks
+that call these handlers middleware.
 
 ## eveCompat
 
@@ -23,7 +60,7 @@ app.route('/eve/v1', eveCompat({
 
 ## createEveCompatApp
 
-Standalone app with `/eve/v1` prefix:
+Standalone Hono app with `/eve/v1` prefix:
 
 ```ts
 import { createEveCompatApp } from '@flue-eve/compat-server';
